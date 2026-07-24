@@ -16,8 +16,10 @@ export function WagasaCoupleFigures({ scene, isExiting }: WagasaCoupleFiguresPro
       animate={
         scene === "scene4"
           ? { opacity: 1, scale: 0.50, x: 0, y: 48 }
+          : scene === "scene2"
+          ? { opacity: 1, scale: 0.99, x: -8, y: 34 }  // scene2: 0.90 × 1.10
           : isExiting
-          ? { opacity: 1, scale: 0.90, x: -8, y: 34 }
+          ? { opacity: 1, scale: 0.90, x: -8, y: 34 }  // scene3: unchanged
           : { opacity: 0, scale: 0.80, x: -8, y: 45 }
       }
       transition={{

@@ -11,8 +11,8 @@ export const wagasas: WagasaConfigItem[] = [
     driftY: 4,
     swayDuration: 3.6,
     exitDelay: 0.15,
-    closed: { top: -153, left: -93, size: 279 },
-    open: { top: -190, left: -120, size: 300 },
+    closed: { top: -153, left: -93, size: 293 },  // 279 × 1.05
+    open: { top: -190, left: -120, size: 315 },    // 300 × 1.05
   },
   // 2. Top-Right: Umbrella #2 (Terracotta / Orange)
   {
@@ -23,8 +23,8 @@ export const wagasas: WagasaConfigItem[] = [
     driftY: -5,
     swayDuration: 3.5,
     exitDelay: 0.1,
-    closed: { top: -154, left: 105, size: 354 },
-    open: { top: -92, left: 240, size: 360 },
+    closed: { top: -154, left: 105, size: 372 },  // 354 × 1.05
+    open: { top: -92, left: 240, size: 378 },      // 360 × 1.05
   },
   // 3. Upper-Mid Left: Umbrella #3 (Medium Brown)
   {
@@ -35,8 +35,8 @@ export const wagasas: WagasaConfigItem[] = [
     driftY: 5,
     swayDuration: 4.1,
     exitDelay: 0.0,
-    closed: { top: 59, left: -58, size: 281 },
-    open: { top: 15, left: -145, size: 281 },
+    closed: { top: 59, left: -58, size: 295 },    // 281 × 1.05
+    open: { top: 15, left: -145, size: 295 },     // 281 × 1.05
   },
   // 4. Mid-Right: Umbrella #1 (Light Beige)
   {
@@ -47,8 +47,8 @@ export const wagasas: WagasaConfigItem[] = [
     driftY: -4,
     swayDuration: 4.0,
     exitDelay: 0.05,
-    closed: { top: 70, left: 173, size: 279 },
-    open: { top: 148, left: 244, size: 279 },
+    closed: { top: 70, left: 173, size: 293 },   // 279 × 1.05
+    open: { top: 148, left: 244, size: 293 },     // 279 × 1.05
   },
   // 5. Lower-Mid Left: Umbrella #1 (Light Beige)
   {
@@ -59,8 +59,8 @@ export const wagasas: WagasaConfigItem[] = [
     driftY: 6,
     swayDuration: 3.8,
     exitDelay: 0.25,
-    closed: { top: 290, left: -78, size: 279 },
-    open: { top: 553, left: -124, size: 290 },
+    closed: { top: 250, left: -78, size: 305 },  // 279 × 1.05
+    open: { top: 553, left: -124, size: 305 },   // 290 × 1.05
   },
   // 6. Lower-Mid Right: Umbrella #3 (Medium Brown)
   {
@@ -71,8 +71,8 @@ export const wagasas: WagasaConfigItem[] = [
     driftY: -3,
     swayDuration: 3.7,
     exitDelay: 0.2,
-    closed: { top: 256, left: 91, size: 334 },
-    open: { top: 256, left: 600, size: 334 },
+    closed: { top: 236, left: 91, size: 351 },   // 334 × 1.05
+    open: { top: 256, left: 600, size: 351 },    // 334 × 1.05
   },
   // 7. Bottom-Left: Umbrella #2 (Terracotta / Orange)
   {
@@ -83,8 +83,8 @@ export const wagasas: WagasaConfigItem[] = [
     driftY: -6,
     swayDuration: 4.2,
     exitDelay: 0.4,
-    closed: { top: 463, left: -31, size: 294 },
-    open: { top: 600, left: 65, size: 294 },
+    closed: { top: 463, left: -61, size: 309 },  // 294 × 1.05
+    open: { top: 600, left: 65, size: 309 },     // 294 × 1.05
   },
   // 8. Bottom-Right: Umbrella #1 (Light Beige)
   {
@@ -95,7 +95,7 @@ export const wagasas: WagasaConfigItem[] = [
     driftY: 4,
     swayDuration: 3.9,
     exitDelay: 0.35,
-    closed: { top: 437, left: 155, size: 279 },
-    open: { top: 558, left: 269, size: 279 },
+    closed: { top: 460, left: 155, size: 293 },  // 279 × 1.05
+    open: { top: 558, left: 269, size: 293 },    // 279 × 1.05
   },
 ];
