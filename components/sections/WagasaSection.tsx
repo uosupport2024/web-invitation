@@ -27,11 +27,6 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
     setTimeout(() => {
       setScene("scene4");
     }, 4500);
-
-    // Transisi ke halaman selanjutnya (~6.5s total)
-    setTimeout(() => {
-      onOpen?.();
-    }, 6500);
   };
 
   const isExiting = scene !== "scene1";
@@ -64,7 +59,7 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
           }}
         >
           {/* Header title images & button image for Scene 4 */}
-          <Scene4Overlay scene={scene} />
+          <Scene4Overlay scene={scene} onOpen={onOpen} />
 
           {/* Theo & Jesslyn couple figures */}
           <WagasaCoupleFigures scene={scene} isExiting={isExiting} />

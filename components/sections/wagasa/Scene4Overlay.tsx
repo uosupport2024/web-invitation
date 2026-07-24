@@ -6,9 +6,10 @@ import { SceneState } from "./types";
 
 interface Scene4OverlayProps {
   scene: SceneState;
+  onOpen?: () => void;
 }
 
-export function Scene4Overlay({ scene }: Scene4OverlayProps) {
+export function Scene4Overlay({ scene, onOpen }: Scene4OverlayProps) {
   return (
     <>
       {/* Scene 4 Header Text Image Assets (The Wedding Of & Theodore & Jesslyn) */}
@@ -75,7 +76,16 @@ export function Scene4Overlay({ scene }: Scene4OverlayProps) {
               justifyContent: "center",
             }}
           >
-            <div style={{ position: "relative", width: "34%", aspectRatio: "228 / 91" }}>
+            <div
+              onClick={onOpen}
+              style={{
+                position: "relative",
+                width: "34%",
+                aspectRatio: "228 / 91",
+                cursor: "pointer",
+                pointerEvents: "auto",
+              }}
+            >
               <Image
                 src="/images/theojesslyn_button.png"
                 alt="Welcome Button"
