@@ -104,7 +104,7 @@ const wagasas = [
   },
 ];
 
-type SceneState = "scene1" | "scene2" | "scene3";
+type SceneState = "scene1" | "scene2" | "scene3" | "scene4";
 
 interface WagasaSectionProps {
   onOpen?: () => void;
@@ -117,18 +117,23 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
     if (scene !== "scene1") return;
     navigator.vibrate?.(30);
 
-    // Scene 2 (~3-5s): Payung-payung mengembang mekar ke pinggir layar secara berurutan
+    // Step 2 (Image 2): Payung mekar ke bingkai pinggir layar, bertahan ~3.5 detik
     setScene("scene2");
 
-    // Scene 3 (~1s): Pause dengan pasangan terungkap jelas di tengah & payung membingkai pinggir layar
+    // Step 3: Semua payung menghilang (opacity: 0), figur bertahan selama 1 detik
     setTimeout(() => {
       setScene("scene3");
     }, 3500);
 
-    // Trigger transisi akhir (~4.5s total)
+    // Step 4 (Scene 4): Kamera melakukan slow zoom out selama ~2 detik
+    setTimeout(() => {
+      setScene("scene4");
+    }, 4500);
+
+    // Transisi ke halaman selanjutnya (~6.5s total)
     setTimeout(() => {
       onOpen?.();
-    }, 4500);
+    }, 6500);
   };
 
   const isExiting = scene !== "scene1";
@@ -144,36 +149,176 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
         cursor: scene === "scene1" ? "pointer" : "default",
       }}
     >
-      {/* Background — transisi dari warm tan → cream ivory saat terbuka */}
+      {/* Background — transisi ke warna #DBAF8C saat terbuka */}
       <motion.div
         style={{ position: "absolute", inset: 0, zIndex: 0 }}
         animate={{
-          background: isExiting
-            ? "linear-gradient(160deg, #f5ede0 0%, #ede0c8 40%, #f0e4cc 100%)"
-            : "linear-gradient(145deg, #c4a06a 0%, #b8956a 30%, #cba97a 60%, #c49a68 100%)",
+          background: isExiting ? "#DBAF8C" : "#c4a06a",
         }}
-        transition={{ duration: 3.0, ease: "easeInOut" }}
+        transition={{ duration: 2.0, ease: "easeInOut" }}
       />
 
-      {/* Main container wrapper */}
-      <div style={{ position: "relative", width: "100%", height: "100%", zIndex: 1 }}>
-        {/* Couple Figures (Theo & Jesslyn) — diletakkan di bawah payung (zIndex: 0) */}
+      {/* Triple Cloud Background Layers — 900x1600 full canvas layering */}
+      {/* Layer 1 (Awan Bawah): trippleawan-02.png */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: scene === "scene4" ? 1 : 0 }}
+        transition={{ duration: 1.5, ease: "easeInOut" }}
+        style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}
+      >
+        <Image
+          src="/images/theojesslyn_trippleawan-02.png"
+          alt=""
+          fill
+          className="object-fill"
+          sizes="100vw"
+          priority
+        />
+      </motion.div>
+
+      {/* Layer 2 (Awan Tengah): trippleawan-01.png */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: scene === "scene4" ? 1 : 0 }}
+        transition={{ duration: 1.5, delay: 0.15, ease: "easeInOut" }}
+        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}
+      >
+        <Image
+          src="/images/theojesslyn_trippleawan-01.png"
+          alt=""
+          fill
+          className="object-fill"
+          sizes="100vw"
+          priority
+        />
+      </motion.div>
+
+      {/* Layer 3 (Awan Atas Overlay): trippleawan-03.png */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: scene === "scene4" ? 1 : 0 }}
+        transition={{ duration: 1.5, delay: 0.3, ease: "easeInOut" }}
+        style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}
+      >
+        <Image
+          src="/images/theojesslyn_trippleawan-03.png"
+          alt=""
+          fill
+          className="object-fill"
+          sizes="100vw"
+          priority
+        />
+      </motion.div>
+
+      {/* Main container wrapper — Step 4 Camera Slow Zoom Out & Layout */}
+      <motion.div
+        style={{ position: "relative", width: "100%", height: "100%", zIndex: 4 }}
+        animate={
+          scene === "scene4"
+            ? { scale: 0.88, opacity: 1 }
+            : { scale: 1, opacity: 1 }
+        }
+        transition={{
+          duration: 2.0,
+          ease: [0.25, 0.1, 0.25, 1],
+        }}
+      >
+        {/* Scene 4 Header Text Image Assets (The Wedding Of & Theodore & Jesslyn) */}
+        <AnimatePresence>
+          {scene === "scene4" && (
+            <motion.div
+              initial={{ opacity: 0, y: -25 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              style={{
+                position: "absolute",
+                top: "14%",
+                left: 0,
+                right: 0,
+                zIndex: 10,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 12,
+                pointerEvents: "none",
+              }}
+            >
+              {/* THE WEDDING OF Image */}
+              <div style={{ position: "relative", width: "42%", aspectRatio: "289 / 35" }}>
+                <Image
+                  src="/images/theojesslyn_theweddingof.png"
+                  alt="The Wedding Of"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+
+              {/* THEODORE & JESSLYN Name Image */}
+              <div style={{ position: "relative", width: "75%", aspectRatio: "660 / 67" }}>
+                <Image
+                  src="/images/theojesslyn_namebuatcover.png"
+                  alt="Theodore & Jesslyn"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Scene 4 Button Image Asset (theojesslyn_button.png) */}
+        <AnimatePresence>
+          {scene === "scene4" && (
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.6, delay: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+              style={{
+                position: "absolute",
+                bottom: "11%",
+                left: 0,
+                right: 0,
+                zIndex: 10,
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <div style={{ position: "relative", width: "34%", aspectRatio: "228 / 91" }}>
+                <Image
+                  src="/images/theojesslyn_button.png"
+                  alt="Welcome Button"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Couple Figures (Theo & Jesslyn) — diletakkan di bawah payung (zIndex: 0 di Step 2) */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.94, y: 15 }}
+          initial={{ opacity: 0, scale: 0.65, y: 15 }}
           animate={
-            isExiting
-              ? { opacity: 1, scale: 1, y: 0 }
-              : { opacity: 0, scale: 0.94, y: 15 }
+            scene === "scene4"
+              ? { opacity: 1, scale: 0.50, y: 35 }
+              : isExiting
+              ? { opacity: 1, scale: 0.70, y: 0 }
+              : { opacity: 0, scale: 0.65, y: 15 }
           }
           transition={{
-            duration: 2.2,
+            duration: 2.0,
             delay: 0.2,
             ease: [0.25, 0.1, 0.25, 1],
           }}
           style={{
             position: "absolute",
             inset: 0,
-            zIndex: 0,
+            zIndex: scene === "scene4" ? 4 : 0,
             pointerEvents: "none",
           }}
         >
@@ -219,7 +364,11 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
           </div>
         </motion.div>
 
-        {/* 8 Wagasa Umbrellas — mekar ke bingkai pinggir layar (tetap kelihatan memelihara estetika Image 2) */}
+        {/* 8 Wagasa Umbrellas:
+            - Step 1 (scene1): Positions closed (Image 1)
+            - Step 2 (scene2): Positions open (Image 2), framing screen for ~3.5s
+            - Step 3 & 4 (scene3/4): Payung semua menghilang (opacity: 0)
+        */}
         {wagasas.map((w, i) => {
           const c = w.closed;
           const o = w.open;
@@ -228,19 +377,26 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
               key={i}
               style={{ position: "absolute", aspectRatio: "1", zIndex: w.z }}
               animate={
-                isExiting
+                scene === "scene2"
                   ? {
                     top: `${(o.top / 677) * 100}%`,
                     left: `${(o.left / 375) * 100}%`,
                     width: `${(o.size / 375) * 100}%`,
                     opacity: 1,
                   }
-                  : {
-                    top: `${(c.top / 677) * 100}%`,
-                    left: `${(c.left / 375) * 100}%`,
-                    width: `${(c.size / 375) * 100}%`,
-                    opacity: 1,
-                  }
+                  : scene === "scene3" || scene === "scene4"
+                    ? {
+                      top: `${(o.top / 677) * 100}%`,
+                      left: `${(o.left / 375) * 100}%`,
+                      width: `${(o.size / 375) * 100}%`,
+                      opacity: 0,
+                    }
+                    : {
+                      top: `${(c.top / 677) * 100}%`,
+                      left: `${(c.left / 375) * 100}%`,
+                      width: `${(c.size / 375) * 100}%`,
+                      opacity: 1,
+                    }
               }
               initial={{
                 top: `${(c.top / 677) * 100}%`,
@@ -249,16 +405,22 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
                 opacity: 1,
               }}
               transition={
-                isExiting
+                scene === "scene2"
                   ? {
-                    duration: 3.0,
+                    duration: 2.8,
                     delay: w.exitDelay,
                     ease: [0.33, 1, 0.68, 1],
                   }
-                  : { duration: 0.5 }
+                  : scene === "scene3" || scene === "scene4"
+                    ? {
+                      duration: 1.0,
+                      delay: w.exitDelay * 0.5,
+                      ease: "easeOut",
+                    }
+                    : { duration: 0.5 }
               }
             >
-              {/* Swaying & Wind-Drifting Umbrella Graphic (Tetap bergoyang lembut) */}
+              {/* Swaying & Wind-Drifting Umbrella Graphic */}
               <motion.div
                 style={{ position: "relative", width: "100%", height: "100%" }}
                 animate={{
@@ -277,42 +439,7 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
             </motion.div>
           );
         })}
-      </div>
-
-      {/* Hint tap — hanya di Scene 1 */}
-      <AnimatePresence>
-        {scene === "scene1" && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, y: [0, 6, 0] }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-            style={{
-              position: "absolute",
-              bottom: "6%",
-              left: 0,
-              right: 0,
-              zIndex: 10,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 6,
-              pointerEvents: "none",
-            }}
-          >
-            <span style={{
-              fontSize: 13,
-              color: "rgba(255,255,255,0.9)",
-              fontFamily: "serif",
-              letterSpacing: "0.14em",
-              textShadow: "0 1px 6px rgba(0,0,0,0.35)",
-            }}>
-              Sentuh untuk membuka
-            </span>
-            <span style={{ fontSize: 18, color: "rgba(255,255,255,0.8)" }}>↓</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </motion.div>
     </section>
   );
 }
