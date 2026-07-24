@@ -1,0 +1,125 @@
+.section {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  background: #c4a06a;
+  z-index: 0;
+}
+
+.wagasa {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.wagasaImage {
+  object-fit: contain;
+}
+
+/* Mobile-first: ukuran 70vh agar cukup besar di portrait */
+
+.wagasa1 {
+  top: -22%;
+  left: -50%;
+  width: 70vh;
+  height: 70vh;
+}
+
+.wagasa2 {
+  top: -25%;
+  right: -60%;
+  width: 62vh;
+  height: 62vh;
+}
+
+.wagasa3 {
+  top: 8%;
+  right: -25%;
+  width: 72vh;
+  height: 72vh;
+}
+
+.wagasa4 {
+  top: 12%;
+  left: -22%;
+  width: 68vh;
+  height: 68vh;
+}
+
+.wagasa5 {
+  top: 46%;
+  left: -10%;
+  width: 74vh;
+  height: 74vh;
+}
+
+.wagasa6 {
+  bottom: -22%;
+  left: -28%;
+  width: 65vh;
+  height: 65vh;
+}
+
+.wagasa7 {
+  bottom: -20%;
+  right: -22%;
+  width: 68vh;
+  height: 68vh;
+}
+
+@media (min-width: 768px) {
+  .wagasa1 {
+    top: -12%;
+    left: -14%;
+    width: 50vw;
+    height: 50vw;
+  }
+
+  .wagasa2 {
+    top: -18%;
+    right: -12%;
+    width: 42vw;
+    height: 42vw;
+  }
+
+  .wagasa3 {
+    top: 5%;
+    right: -14%;
+    width: 54vw;
+    height: 54vw;
+  }
+
+  .wagasa4 {
+    top: 12%;
+    left: -14%;
+    width: 48vw;
+    height: 48vw;
+  }
+
+  .wagasa5 {
+    top: 40%;
+    left: 0%;
+    width: 56vw;
+    height: 56vw;
+  }
+
+  .wagasa6 {
+    bottom: -14%;
+    left: -16%;
+    width: 46vw;
+    height: 46vw;
+  }
+
+  .wagasa7 {
+    bottom: -12%;
+    right: -14%;
+    width: 48vw;
+    height: 48vw;
+  }
+}
