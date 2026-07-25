@@ -25,7 +25,7 @@ export function Scene4Overlay({ scene, onOpen }: Scene4OverlayProps) {
               top: "14%",
               left: 0,
               right: 0,
-              zIndex: 10,
+              zIndex: 20,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -71,7 +71,7 @@ export function Scene4Overlay({ scene, onOpen }: Scene4OverlayProps) {
               bottom: "11%",
               left: 0,
               right: 0,
-              zIndex: 10,
+              zIndex: 20,
               display: "flex",
               justifyContent: "center",
             }}

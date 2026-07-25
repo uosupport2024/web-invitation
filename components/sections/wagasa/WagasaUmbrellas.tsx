@@ -18,7 +18,7 @@ export function WagasaUmbrellas({ scene }: WagasaUmbrellasProps) {
         return (
           <motion.div
             key={i}
-            style={{ position: "absolute", aspectRatio: "1", zIndex: w.z }}
+            style={{ position: "absolute", aspectRatio: "1", zIndex: 10 + w.z }}
             animate={
               scene === "scene2"
                 ? {

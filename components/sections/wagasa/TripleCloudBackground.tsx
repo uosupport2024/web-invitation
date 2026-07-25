@@ -22,12 +22,24 @@ export function TripleCloudBackground({ scene, isExiting }: TripleCloudBackgroun
       />
 
       {/* Triple Cloud Background Layers — 900x1600 full canvas layering */}
-      {/* Layer 1 (Awan Bawah): trippleawan-02.png — tampil di scene1, scene2, scene4 */}
+      {/* Layer 1 (Awan Bawah): trippleawan-02.png */}
       <motion.div
-        initial={{ opacity: 1 }}
-        animate={{ opacity: scene === "scene3" ? 0 : 1 }}
-        transition={{ duration: 1.5, ease: "easeInOut" }}
-        style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}
+        initial={{ opacity: 1, scale: 1.45 }}
+        animate={{
+          opacity: 1,
+          scale: scene === "scene4" ? 1.0 : 1.45,
+        }}
+        transition={{
+          duration: 1.8,
+          ease: [0.25, 0.1, 0.25, 1],
+        }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: "none",
+          transformOrigin: "center center",
+        }}
       >
         <Image
           src="/images/theojesslyn_trippleawan-02.png"
@@ -41,10 +53,22 @@ export function TripleCloudBackground({ scene, isExiting }: TripleCloudBackgroun
 
       {/* Layer 2 (Awan Tengah): trippleawan-01.png */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: scene === "scene4" ? 1 : 0 }}
-        transition={{ duration: 1.5, delay: 0.15, ease: "easeInOut" }}
-        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}
+        initial={{ opacity: 1, scale: 1.45 }}
+        animate={{
+          opacity: 1,
+          scale: scene === "scene4" ? 1.0 : 1.45,
+        }}
+        transition={{
+          duration: 1.8,
+          ease: [0.25, 0.1, 0.25, 1],
+        }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 2,
+          pointerEvents: "none",
+          transformOrigin: "center center",
+        }}
       >
         <Image
           src="/images/theojesslyn_trippleawan-01.png"
@@ -58,10 +82,22 @@ export function TripleCloudBackground({ scene, isExiting }: TripleCloudBackgroun
 
       {/* Layer 3 (Awan Atas Overlay): trippleawan-03.png */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: scene === "scene4" ? 1 : 0 }}
-        transition={{ duration: 1.5, delay: 0.3, ease: "easeInOut" }}
-        style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}
+        initial={{ opacity: 1, scale: 1.45 }}
+        animate={{
+          opacity: 1,
+          scale: scene === "scene4" ? 1.0 : 1.45,
+        }}
+        transition={{
+          duration: 1.8,
+          ease: [0.25, 0.1, 0.25, 1],
+        }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 3,
+          pointerEvents: "none",
+          transformOrigin: "center center",
+        }}
       >
         <Image
           src="/images/theojesslyn_trippleawan-03.png"

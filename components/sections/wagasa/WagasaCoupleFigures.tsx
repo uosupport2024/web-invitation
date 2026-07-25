@@ -12,25 +12,22 @@ interface WagasaCoupleFiguresProps {
 export function WagasaCoupleFigures({ scene, isExiting }: WagasaCoupleFiguresProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.65, y: 15 }}
+      initial={{ opacity: 0, scale: 0.85, y: 35 }}
       animate={
         scene === "scene4"
-          ? { opacity: 1, scale: 0.50, x: 0, y: 48 }
-          : scene === "scene2"
-          ? { opacity: 1, scale: 0.99, x: -8, y: 34 }  // scene2: 0.90 × 1.10
-          : isExiting
-          ? { opacity: 1, scale: 0.90, x: -8, y: 34 }  // scene3: unchanged
-          : { opacity: 0, scale: 0.80, x: -8, y: 45 }
+          ? { opacity: 1, scale: 0.56, x: 0, y: 10 }
+          : scene === "scene2" || scene === "scene3"
+          ? { opacity: 1, scale: 1.0, x: -8, y: 25 }
+          : { opacity: 0, scale: 0.85, x: -8, y: 35 }
       }
       transition={{
-        duration: 2.0,
-        delay: 0.2,
+        duration: 1.8,
         ease: [0.25, 0.1, 0.25, 1],
       }}
       style={{
         position: "absolute",
         inset: 0,
-        zIndex: scene === "scene4" ? 4 : 0,
+        zIndex: 5,
         pointerEvents: "none",
       }}
     >
