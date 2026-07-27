@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { WagasaSection } from "@/components/sections/WagasaSection";
@@ -20,6 +20,7 @@ interface InteractiveFoodItemProps {
   zIndex?: number;
   floatDelay?: number;
   isRevealed: boolean;
+  isZoomedOut?: boolean;
   onReveal: () => void;
 }
 
@@ -36,26 +37,29 @@ function InteractiveFoodItem({
   zIndex = 10,
   floatDelay = 0,
   isRevealed,
+  isZoomedOut = false,
   onReveal,
 }: InteractiveFoodItemProps) {
   const [showParticles, setShowParticles] = useState(false);
 
   const handleClick = () => {
-    if (isRevealed) return;
+    if (isRevealed || isZoomedOut) return;
     setShowParticles(true);
     onReveal();
     setTimeout(() => setShowParticles(false), 1000);
   };
 
+  const shouldShowInfo = isRevealed && !isZoomedOut;
+
   return (
     <motion.div
       animate={
-        !isRevealed
+        !shouldShowInfo
           ? { y: [0, -6, 0] }
           : { y: 0 }
       }
       transition={
-        !isRevealed
+        !shouldShowInfo
           ? { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: floatDelay }
           : { duration: 0.4 }
       }
@@ -64,12 +68,12 @@ function InteractiveFoodItem({
         left,
         top,
         width,
-        cursor: isRevealed ? "default" : "pointer",
+        cursor: shouldShowInfo || isZoomedOut ? "default" : "pointer",
         zIndex,
       }}
       onClick={handleClick}
-      whileHover={!isRevealed ? { scale: 1.05, filter: "brightness(1.08)" } : undefined}
-      whileTap={!isRevealed ? { scale: 0.95 } : undefined}
+      whileHover={!shouldShowInfo && !isZoomedOut ? { scale: 1.05, filter: "brightness(1.08)" } : undefined}
+      whileTap={!shouldShowInfo && !isZoomedOut ? { scale: 0.95 } : undefined}
     >
       {/* Particles burst when tapped */}
       {showParticles && (
@@ -106,8 +110,8 @@ function InteractiveFoodItem({
         </div>
       )}
 
-      {/* Clickability hint pulse aura (when unrevealed) */}
-      {!isRevealed && (
+      {/* Clickability hint pulse aura (when unrevealed & not zoomed out) */}
+      {!shouldShowInfo && !isZoomedOut && (
         <motion.div
           animate={{ scale: [0.95, 1.06, 0.95], opacity: [0.25, 0.65, 0.25] }}
           transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: floatDelay }}
@@ -123,10 +127,11 @@ function InteractiveFoodItem({
       )}
 
       <AnimatePresence mode="wait">
-        {!isRevealed ? (
+        {!shouldShowInfo ? (
           <motion.div
             key="food-state"
-            initial={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{
               clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)",
               scale: 0.9,
@@ -159,6 +164,10 @@ function InteractiveFoodItem({
               opacity: 1,
               rotate: 0,
             }}
+            exit={{
+              opacity: 0,
+              scale: 0.95,
+            }}
             transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
           >
             <Image
@@ -181,10 +190,23 @@ export default function Home() {
   const [isNextPage, setIsNextPage] = useState(false);
   const [showBottomCta, setShowBottomCta] = useState(false);
   const [revealedFoods, setRevealedFoods] = useState<Record<string, boolean>>({});
+  const [isSomenPulled, setIsSomenPulled] = useState(false);
+  const section3Ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (revealedFoods["tomato"] && section3Ref.current) {
+      section3Ref.current.scrollTop = 0;
+    }
+  }, [revealedFoods]);
 
   const handleFoodClick = (key: string) => {
     if (revealedFoods[key]) return;
     setRevealedFoods((prev) => ({ ...prev, [key]: true }));
+    if (key === "tomato") {
+      if (section3Ref.current) {
+        section3Ref.current.scrollTop = 0;
+      }
+    }
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -365,6 +387,7 @@ export default function Home() {
       <AnimatePresence>
         {isNextPage && (
           <motion.div
+            ref={section3Ref}
             initial={{ y: "100%" }}
             animate={{ y: "0%" }}
             exit={{ y: "100%" }}
@@ -374,13 +397,33 @@ export default function Home() {
               inset: 0,
               zIndex: 3,
               background: "#61291A",
-              overflowY: "auto",
+              overflowY: revealedFoods["tomato"] ? "hidden" : "auto",
               overflowX: "hidden",
             }}
           >
-            <div style={{ position: "relative", width: "100%", minHeight: `calc(${(784 / 677) * 100}dvh - 10% + 78vw)` }}>
+            <motion.div
+              animate={{
+                scale: revealedFoods["tomato"] ? 0.62 : 1,
+              }}
+              transition={{
+                duration: 1.2,
+                ease: [0.25, 1, 0.5, 1],
+              }}
+              style={{
+                position: "relative",
+                width: "100%",
+                minHeight: revealedFoods["tomato"]
+                  ? `calc(${(784 / 677) * 100 * 0.62}dvh + 48vw)`
+                  : `calc(${(784 / 677) * 100}dvh - 10% + 78vw)`,
+                transformOrigin: "top center",
+              }}
+            >
               {/* Direction text on Top Left */}
-              <div
+              <motion.div
+                animate={{
+                  opacity: revealedFoods["tomato"] ? 0 : 1,
+                }}
+                transition={{ duration: 0.4 }}
                 style={{
                   position: "absolute",
                   top: "24px",
@@ -403,7 +446,7 @@ export default function Home() {
                 >
                   * Tap on each Food
                 </p>
-              </div>
+              </motion.div>
 
               {/* Onigiri */}
               <InteractiveFoodItem
@@ -419,6 +462,7 @@ export default function Home() {
                 imgHeight={364}
                 floatDelay={0}
                 isRevealed={!!revealedFoods["onigiri"]}
+                isZoomedOut={!!revealedFoods["tomato"]}
                 onReveal={() => handleFoodClick("onigiri")}
               />
 
@@ -436,10 +480,11 @@ export default function Home() {
                 imgHeight={325}
                 floatDelay={0.6}
                 isRevealed={!!revealedFoods["ricebowl"]}
+                isZoomedOut={!!revealedFoods["tomato"]}
                 onReveal={() => handleFoodClick("ricebowl")}
               />
 
-              {/* Chopsticks image */}
+              {/* Chopsticks image — static */}
               <div
                 style={{
                   position: "absolute",
@@ -475,6 +520,7 @@ export default function Home() {
                 zIndex={15}
                 floatDelay={1.2}
                 isRevealed={!!revealedFoods["sauce"]}
+                isZoomedOut={!!revealedFoods["tomato"]}
                 onReveal={() => handleFoodClick("sauce")}
               />
 
@@ -492,6 +538,7 @@ export default function Home() {
                 imgHeight={274}
                 floatDelay={0.4}
                 isRevealed={!!revealedFoods["gunkan"]}
+                isZoomedOut={!!revealedFoods["tomato"]}
                 onReveal={() => handleFoodClick("gunkan")}
               />
 
@@ -509,9 +556,185 @@ export default function Home() {
                 imgHeight={153}
                 floatDelay={0.9}
                 isRevealed={!!revealedFoods["tomato"]}
+                isZoomedOut={!!revealedFoods["tomato"]}
                 onReveal={() => handleFoodClick("tomato")}
               />
-            </div>
+
+              {/* Direction hint: * Pull the Somen */}
+              <AnimatePresence mode="wait">
+                {revealedFoods["tomato"] && !isSomenPulled && (
+                  <motion.div
+                    key="pull-somen-hint"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => setIsSomenPulled(true)}
+                    style={{
+                      position: "absolute",
+                      left: "50%",
+                      top: `calc(${(660 / 677) * 100}dvh - 10%)`,
+                      transform: "translateX(-50%)",
+                      zIndex: 99999.5,
+                      cursor: "pointer",
+                      textAlign: "center",
+                      display: isSomenPulled ? "none" : "block",
+                    }}
+                  >
+                    <motion.div
+                      animate={{ opacity: [0.6, 1, 0.6], y: [0, -6, 0] }}
+                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          color: "#F3D5B5",
+                          fontFamily: "var(--font-sans), system-ui, sans-serif",
+                          fontSize: "0.85rem",
+                          letterSpacing: "0.15em",
+                          textTransform: "uppercase",
+                          fontWeight: 600,
+                          textShadow: "0 2px 10px rgba(0,0,0,0.9)",
+                          background: "rgba(97,41,26,0.85)",
+                          padding: "8px 16px",
+                          borderRadius: "20px",
+                          border: "1.5px dashed rgba(243, 213, 181, 0.7)",
+                          boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
+                        }}
+                      >
+                        * Pull the Somen
+                      </p>
+                      <span style={{ fontSize: "1.3rem", color: "#F3D5B5", display: "block", marginTop: "2px" }}>
+                        ↑
+                      </span>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Bowl Back — appears at very bottom of page (zIndex: 99998) */}
+              <AnimatePresence>
+                {revealedFoods["tomato"] && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 250 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 250 }}
+                    transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1] }}
+                    style={{
+                      position: "absolute",
+                      left: `${(-272 / 375) * 100}%`,
+                      top: `calc(${(644 / 677) * 100}dvh - 10%)`,
+                      width: `${(911 / 375) * 100}%`,
+                      zIndex: 99998,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <Image
+                      src="/images/theojesslyn_bowlback.png"
+                      alt="Bowl Back"
+                      width={911}
+                      height={403}
+                      style={{ width: "100%", height: "auto", display: "block" }}
+                      priority
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Somen — enlarged by 10% & raised 20% higher, draggable upward with swaying & 10% right shift (zIndex: 99999) */}
+              <AnimatePresence>
+                {revealedFoods["tomato"] && (
+                  <motion.div
+                    drag="y"
+                    dragConstraints={{ top: -530, bottom: 0 }}
+                    dragElastic={0.15}
+                    onPointerDown={() => setIsSomenPulled(true)}
+                    onDragStart={() => setIsSomenPulled(true)}
+                    onDrag={() => setIsSomenPulled(true)}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.y < -30 || info.velocity.y < -50) {
+                        setIsSomenPulled(true);
+                      } else if (info.offset.y > 30 || info.velocity.y > 50) {
+                        setIsSomenPulled(false);
+                      }
+                    }}
+                    initial={{ opacity: 0, y: 250 }}
+                    animate={{
+                      opacity: 1,
+                      y: isSomenPulled ? -530 : 0,
+                      x: isSomenPulled ? "5%" : "0%",
+                      rotate: isSomenPulled
+                        ? [0, -3.5, 3.5, -2, 2, -0.8, 0]
+                        : [0, 3.5, -3.5, 2, -2, 0.8, 0],
+                      scaleY: isSomenPulled
+                        ? [1, 1.05, 0.98, 1.02, 1]
+                        : [1, 0.96, 1.03, 0.98, 1],
+                      skewX: isSomenPulled
+                        ? [0, -2.5, 2.5, -1, 1, 0]
+                        : [0, 2.5, -2.5, 1, -1, 0],
+                    }}
+                    exit={{ opacity: 0, y: 250 }}
+                    transition={{
+                      duration: 1.6,
+                      ease: [0.25, 1, 0.5, 1],
+                      rotate: { duration: 2.2, ease: [0.37, 0, 0.63, 1] },
+                      scaleY: { duration: 1.6, ease: "easeInOut" },
+                      skewX: { duration: 2.0, ease: "easeInOut" },
+                    }}
+                    onClick={() => setIsSomenPulled((prev) => !prev)}
+                    style={{
+                      position: "absolute",
+                      left: `${(-280 / 375) * 100}%`,
+                      top: `calc(${(530 / 677) * 100}dvh - 10%)`,
+                      width: `${(954 / 375) * 100}%`,
+                      zIndex: 99999,
+                      cursor: "grab",
+                      touchAction: "none",
+                      transformOrigin: "50% 15%",
+                    }}
+                  >
+                    <Image
+                      src="/images/theojesslyn_somen.png"
+                      alt="Somen Noodles"
+                      width={954}
+                      height={1105}
+                      style={{ width: "100%", height: "auto", display: "block" }}
+                      priority
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Bowl Front — appears at very bottom of page (zIndex: 100000) */}
+              <AnimatePresence>
+                {revealedFoods["tomato"] && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 250 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 250 }}
+                    transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1] }}
+                    onClick={() => setIsSomenPulled((prev) => !prev)}
+                    style={{
+                      position: "absolute",
+                      left: `${(-242 / 375) * 100}%`,
+                      top: `calc(${(764 / 677) * 100}dvh - 10%)`,
+                      width: `${(845 / 375) * 100}%`,
+                      zIndex: 100000,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Image
+                      src="/images/theojesslyn_bowlfront.png"
+                      alt="Bowl Front"
+                      width={845}
+                      height={641}
+                      style={{ width: "100%", height: "auto", display: "block" }}
+                      priority
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

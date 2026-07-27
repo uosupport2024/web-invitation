@@ -25,6 +25,7 @@ export function WagasaUmbrellas({ scene }: WagasaUmbrellasProps) {
                   top: `${(o.top / 677) * 100}%`,
                   left: `${(o.left / 375) * 100}%`,
                   width: `${(o.size / 375) * 100}%`,
+                  x: "0vw",
                   opacity: 1,
                 }
                 : scene === "scene3" || scene === "scene4"
@@ -32,12 +33,14 @@ export function WagasaUmbrellas({ scene }: WagasaUmbrellasProps) {
                   top: `${(o.top / 677) * 100}%`,
                   left: `${(o.left / 375) * 100}%`,
                   width: `${(o.size / 375) * 100}%`,
-                  opacity: 0,
+                  x: o.left < 100 ? "-120vw" : "120vw",
+                  opacity: 1,
                 }
                 : {
                   top: `${(c.top / 677) * 100}%`,
                   left: `${(c.left / 375) * 100}%`,
                   width: `${(c.size / 375) * 100}%`,
+                  x: "0vw",
                   opacity: 1,
                 }
             }
@@ -45,6 +48,7 @@ export function WagasaUmbrellas({ scene }: WagasaUmbrellasProps) {
               top: `${(c.top / 677) * 100}%`,
               left: `${(c.left / 375) * 100}%`,
               width: `${(c.size / 375) * 100}%`,
+              x: "0vw",
               opacity: 1,
             }}
             transition={
@@ -56,9 +60,9 @@ export function WagasaUmbrellas({ scene }: WagasaUmbrellasProps) {
                 }
                 : scene === "scene3" || scene === "scene4"
                 ? {
-                  duration: 1.0,
-                  delay: w.exitDelay * 0.5,
-                  ease: "easeOut",
+                  duration: 1.2,
+                  delay: w.exitDelay * 0.4,
+                  ease: [0.76, 0, 0.24, 1],
                 }
                 : { duration: 0.5 }
             }
