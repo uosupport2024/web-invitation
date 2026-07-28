@@ -466,7 +466,6 @@ export default function Home() {
               background: "#61291A",
               overflowY: revealedFoods["tomato"] ? "hidden" : "auto",
               overflowX: "hidden",
-              touchAction: revealedFoods["tomato"] ? "none" : "auto",
             }}
           >
             <motion.div
@@ -787,8 +786,6 @@ export default function Home() {
                       e.stopPropagation();
                       setIsSomenPulled(true);
                     }}
-                    onDragStart={(e) => e.stopPropagation()}
-                    onDrag={(e) => e.stopPropagation()}
                     onDragEnd={(e, info) => {
                       e.stopPropagation();
                       if (info.offset.y < -30 || info.velocity.y < -50) {
@@ -799,9 +796,6 @@ export default function Home() {
                         setIsSomenFullyPulled(false);
                       }
                     }}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchMove={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => e.stopPropagation()}
                     initial={{ opacity: 0, y: 250 }}
                     animate={{
                       opacity: 1,
@@ -872,9 +866,6 @@ export default function Home() {
                         return next;
                       });
                     }}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchMove={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => e.stopPropagation()}
                     style={{
                       position: "absolute",
                       left: `${(-242 / 375) * 100}%`,
