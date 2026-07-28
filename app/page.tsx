@@ -131,13 +131,12 @@ function InteractiveFoodItem({
         {!shouldShowInfo ? (
           <motion.div
             key="food-state"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, filter: "blur(0px)", scale: 1 }}
+            animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
             exit={{
-              clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)",
-              scale: 0.9,
               opacity: 0,
-              rotate: -3,
+              filter: "blur(8px)",
+              scale: 0.98,
             }}
             transition={{ duration: 0.45, ease: "easeInOut" }}
           >
@@ -154,22 +153,24 @@ function InteractiveFoodItem({
           <motion.div
             key="info-state"
             initial={{
-              clipPath: "circle(0% at 50% 50%)",
-              scale: 1.15,
               opacity: 0,
-              rotate: 3,
+              filter: "blur(8px)",
+              y: 10,
+              scale: 1.02,
             }}
             animate={{
-              clipPath: "circle(150% at 50% 50%)",
-              scale: 1,
               opacity: 1,
-              rotate: 0,
+              filter: "blur(0px)",
+              y: 0,
+              scale: 1,
             }}
             exit={{
               opacity: 0,
-              scale: 0.95,
+              filter: "blur(8px)",
+              y: -10,
+              scale: 0.98,
             }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.55, ease: [0.25, 1, 0.5, 1] }}
           >
             <Image
               src={infoImage}
@@ -218,6 +219,38 @@ export default function Home() {
     // Scroll down (deltaY > 15) triggers entering the Accommodation section
     if (e.deltaY > 15) {
       setShowAccomms(true);
+    }
+  };
+
+  const section2TouchStartY = useRef(0);
+
+  const handleSection2TouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    section2TouchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleSection2TouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isOpen || isNextPage || !showBottomCta) return;
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 30;
+    
+    if (isAtBottom) {
+      const touchEndY = e.touches[0].clientY;
+      const diffY = section2TouchStartY.current - touchEndY;
+      // Swipe up (diffY > 50) at the bottom transitions to next page
+      if (diffY > 50) {
+        setIsNextPage(true);
+      }
+    }
+  };
+
+  const handleSection2Wheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (!isOpen || isNextPage || !showBottomCta) return;
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 30;
+
+    // Scroll down (deltaY > 15) at the bottom transitions to next page
+    if (isAtBottom && e.deltaY > 15) {
+      setIsNextPage(true);
     }
   };
 
@@ -272,6 +305,9 @@ export default function Home() {
         animate={{ y: isOpen ? "0%" : "100%" }}
         transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
         onScroll={handleScroll}
+        onWheel={handleSection2Wheel}
+        onTouchStart={handleSection2TouchStart}
+        onTouchMove={handleSection2TouchMove}
         style={{
           position: "absolute",
           inset: 0,
@@ -874,21 +910,40 @@ export default function Home() {
               background: "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)",
             }}
           >
-            <p
-              style={{
-                margin: 0,
-                color: "rgba(255,255,255,0.85)",
-                fontFamily: "var(--font-geist-sans), var(--font-sans), system-ui, sans-serif",
-                fontSize: "0.75rem",
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                textAlign: "center",
-                textShadow: "0 1px 6px rgba(0,0,0,0.6)",
-                fontWeight: 500,
-              }}
-            >
-              Tap on the Autumn Leaf
-            </p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+              <p
+                style={{
+                  margin: 0,
+                  color: "rgba(255,255,255,0.85)",
+                  fontFamily: "var(--font-geist-sans), var(--font-sans), system-ui, sans-serif",
+                  fontSize: "0.75rem",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  textAlign: "center",
+                  textShadow: "0 1px 6px rgba(0,0,0,0.6)",
+                  fontWeight: 500,
+                }}
+              >
+                Tap on the Autumn Leaf
+              </p>
+              <motion.svg
+                width="18"
+                height="10"
+                viewBox="0 0 18 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                animate={{ y: [0, 4, 0], opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <path
+                  d="M1 1L9 9L17 1"
+                  stroke="rgba(255,255,255,0.85)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </motion.svg>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
