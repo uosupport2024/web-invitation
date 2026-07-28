@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { WagasaSection } from "@/components/sections/WagasaSection";
 import { FallingLeaves } from "@/components/FallingLeaves";
+import { AccommodationSection } from "@/components/sections/AccommodationSection";
 
 interface InteractiveFoodItemProps {
   id: string;
@@ -191,7 +192,34 @@ export default function Home() {
   const [showBottomCta, setShowBottomCta] = useState(false);
   const [revealedFoods, setRevealedFoods] = useState<Record<string, boolean>>({});
   const [isSomenPulled, setIsSomenPulled] = useState(false);
+  const [isSomenFullyPulled, setIsSomenFullyPulled] = useState(false);
+  const [showAccomms, setShowAccomms] = useState(false);
   const section3Ref = useRef<HTMLDivElement>(null);
+  const section3TouchStartY = useRef(0);
+  const allowSwipeTransition = useRef(false);
+
+  const handleSection3TouchStart = (e: React.TouchEvent) => {
+    section3TouchStartY.current = e.touches[0].clientY;
+    allowSwipeTransition.current = isSomenFullyPulled;
+  };
+
+  const handleSection3TouchMove = (e: React.TouchEvent) => {
+    if (!isSomenFullyPulled || showAccomms || !allowSwipeTransition.current) return;
+    const touchEndY = e.touches[0].clientY;
+    const diffY = section3TouchStartY.current - touchEndY;
+    // Swipe up (diffY > 50) triggers entering the Accommodation section
+    if (diffY > 50) {
+      setShowAccomms(true);
+    }
+  };
+
+  const handleSection3Wheel = (e: React.WheelEvent) => {
+    if (!isSomenFullyPulled || showAccomms) return;
+    // Scroll down (deltaY > 15) triggers entering the Accommodation section
+    if (e.deltaY > 15) {
+      setShowAccomms(true);
+    }
+  };
 
   useEffect(() => {
     if (revealedFoods["tomato"] && section3Ref.current) {
@@ -392,6 +420,9 @@ export default function Home() {
             animate={{ y: "0%" }}
             exit={{ y: "100%" }}
             transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
+            onWheel={handleSection3Wheel}
+            onTouchStart={handleSection3TouchStart}
+            onTouchMove={handleSection3TouchMove}
             style={{
               position: "absolute",
               inset: 0,
@@ -562,14 +593,17 @@ export default function Home() {
 
               {/* Direction hint: * Pull the Somen */}
               <AnimatePresence mode="wait">
-                {revealedFoods["tomato"] && !isSomenPulled && (
+                {revealedFoods["tomato"] && !isSomenFullyPulled && (
                   <motion.div
                     key="pull-somen-hint"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, scale: 0.85 }}
                     transition={{ duration: 0.2 }}
-                    onClick={() => setIsSomenPulled(true)}
+                    onClick={() => {
+                      setIsSomenPulled(true);
+                      setIsSomenFullyPulled(true);
+                    }}
                     style={{
                       position: "absolute",
                       left: "50%",
@@ -612,6 +646,55 @@ export default function Home() {
                 )}
               </AnimatePresence>
 
+              {/* Direction hint: * Scroll Down for Accommodation */}
+              <AnimatePresence mode="wait">
+                {isSomenFullyPulled && !showAccomms && (
+                  <motion.div
+                    key="scroll-accomms-hint"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.4 }}
+                    style={{
+                      position: "absolute",
+                      left: "50%",
+                      top: `calc(${(660 / 677) * 100}dvh - 10%)`,
+                      transform: "translateX(-50%)",
+                      zIndex: 99999.5,
+                      textAlign: "center",
+                    }}
+                  >
+                    <motion.div
+                      animate={{ opacity: [0.6, 1, 0.6], y: [0, 6, 0] }}
+                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          color: "#F3D5B5",
+                          fontFamily: "var(--font-sans), system-ui, sans-serif",
+                          fontSize: "0.85rem",
+                          letterSpacing: "0.15em",
+                          textTransform: "uppercase",
+                          fontWeight: 600,
+                          textShadow: "0 2px 10px rgba(0,0,0,0.9)",
+                          background: "rgba(97,41,26,0.85)",
+                          padding: "8px 16px",
+                          borderRadius: "20px",
+                          border: "1.5px dashed rgba(243, 213, 181, 0.7)",
+                          boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
+                        }}
+                      >
+                        * Scroll or Swipe Up
+                      </p>
+                      <span style={{ fontSize: "1.3rem", color: "#F3D5B5", display: "block", marginTop: "2px" }}>
+                        ↓
+                      </span>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Bowl Back — appears at very bottom of page (zIndex: 99998) */}
               <AnimatePresence>
                 {revealedFoods["tomato"] && (
@@ -648,16 +731,25 @@ export default function Home() {
                     drag="y"
                     dragConstraints={{ top: -530, bottom: 0 }}
                     dragElastic={0.15}
-                    onPointerDown={() => setIsSomenPulled(true)}
-                    onDragStart={() => setIsSomenPulled(true)}
-                    onDrag={() => setIsSomenPulled(true)}
-                    onDragEnd={(_, info) => {
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      setIsSomenPulled(true);
+                    }}
+                    onDragStart={(e) => e.stopPropagation()}
+                    onDrag={(e) => e.stopPropagation()}
+                    onDragEnd={(e, info) => {
+                      e.stopPropagation();
                       if (info.offset.y < -30 || info.velocity.y < -50) {
                         setIsSomenPulled(true);
+                        setIsSomenFullyPulled(true);
                       } else if (info.offset.y > 30 || info.velocity.y > 50) {
                         setIsSomenPulled(false);
+                        setIsSomenFullyPulled(false);
                       }
                     }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                     initial={{ opacity: 0, y: 250 }}
                     animate={{
                       opacity: 1,
@@ -681,7 +773,14 @@ export default function Home() {
                       scaleY: { duration: 1.6, ease: "easeInOut" },
                       skewX: { duration: 2.0, ease: "easeInOut" },
                     }}
-                    onClick={() => setIsSomenPulled((prev) => !prev)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsSomenPulled((prev) => {
+                        const next = !prev;
+                        setIsSomenFullyPulled(next);
+                        return next;
+                      });
+                    }}
                     style={{
                       position: "absolute",
                       left: `${(-280 / 375) * 100}%`,
@@ -713,7 +812,17 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 250 }}
                     transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1] }}
-                    onClick={() => setIsSomenPulled((prev) => !prev)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsSomenPulled((prev) => {
+                        const next = !prev;
+                        setIsSomenFullyPulled(next);
+                        return next;
+                      });
+                    }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                     style={{
                       position: "absolute",
                       left: `${(-242 / 375) * 100}%`,
@@ -783,6 +892,12 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Section 4: Accommodation ── */}
+      <AccommodationSection
+        isActive={showAccomms}
+        onClose={() => setShowAccomms(false)}
+      />
     </div>
   );
 }
