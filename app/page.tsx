@@ -312,7 +312,7 @@ export default function Home() {
           position: "absolute",
           inset: 0,
           zIndex: 2,
-          overflowY: "auto",
+          overflowY: isNextPage ? "hidden" : "auto",
           overflowX: "hidden",
           WebkitOverflowScrolling: "touch",
         }}
@@ -466,6 +466,7 @@ export default function Home() {
               background: "#61291A",
               overflowY: revealedFoods["tomato"] ? "hidden" : "auto",
               overflowX: "hidden",
+              touchAction: revealedFoods["tomato"] ? "none" : "auto",
             }}
           >
             <motion.div
@@ -721,11 +722,26 @@ export default function Home() {
                           boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
                         }}
                       >
-                        * Scroll or Swipe Up
+                        Swipe to Next
                       </p>
-                      <span style={{ fontSize: "1.3rem", color: "#F3D5B5", display: "block", marginTop: "2px" }}>
-                        ↓
-                      </span>
+                      <motion.svg
+                        width="18"
+                        height="10"
+                        viewBox="0 0 18 10"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        animate={{ y: [0, 4, 0], opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                        style={{ display: "block", margin: "6px auto 0" }}
+                      >
+                        <path
+                          d="M1 1L9 9L17 1"
+                          stroke="#F3D5B5"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </motion.svg>
                     </motion.div>
                   </motion.div>
                 )}
