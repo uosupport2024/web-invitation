@@ -42,9 +42,10 @@ function createLeaves(count: number): LeafItem[] {
 interface FallingLeavesProps {
   count?: number;
   visible?: boolean;
+  onLeafClick?: () => void;
 }
 
-export function FallingLeaves({ count = 15, visible = true }: FallingLeavesProps) {
+export function FallingLeaves({ count = 15, visible = true, onLeafClick }: FallingLeavesProps) {
   const leaves = useMemo(() => createLeaves(count), [count]);
 
   if (!visible) return null;
@@ -96,6 +97,14 @@ export function FallingLeaves({ count = 15, visible = true }: FallingLeavesProps
           <div
             key={leaf.id}
             className="falling-leaf-gpu"
+            onClick={
+              onLeafClick
+                ? (e) => {
+                    e.stopPropagation();
+                    onLeafClick();
+                  }
+                : undefined
+            }
             style={{
               left: `${leaf.x}%`,
               width: `${leaf.size}px`,
@@ -103,6 +112,8 @@ export function FallingLeaves({ count = 15, visible = true }: FallingLeavesProps
               opacity: leaf.opacity,
               animationDuration: `${leaf.duration}s`,
               animationDelay: `${leaf.delay}s`,
+              pointerEvents: onLeafClick ? "auto" : "none",
+              cursor: onLeafClick ? "pointer" : "default",
               ["--sway-amp" as string]: `${leaf.swayAmp}px`,
               ["--rot-start" as string]: `${leaf.initRotate}deg`,
               ["--rot-dir" as string]: leaf.rotateDirection,

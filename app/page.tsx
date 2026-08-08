@@ -908,7 +908,11 @@ export default function Home() {
       </AnimatePresence>
 
       {/* ── Falling Leaves overlay (visible on section 2) ── */}
-      <FallingLeaves visible={isOpen && !isNextPage} count={18} />
+      <FallingLeaves
+        visible={isOpen && !isNextPage}
+        count={18}
+        onLeafClick={() => setIsNextPage(true)}
+      />
 
       {/* ── Soft Back Button on Section 2 (returns to Wagasa intro cover) ── */}
       <AnimatePresence>
@@ -981,8 +985,10 @@ export default function Home() {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              pointerEvents: "none",
+              pointerEvents: "auto",
+              cursor: "pointer",
             }}
+            onClick={() => setIsNextPage(true)}
           >
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -998,16 +1004,16 @@ export default function Home() {
             >
               <span
                 style={{
-                  color: "rgba(255, 255, 255, 0.6)",
-                  fontSize: "0.65rem",
-                  letterSpacing: "0.22em",
+                  color: "rgba(255, 255, 255, 0.75)",
+                  fontSize: "0.68rem",
+                  letterSpacing: "0.18em",
                   textTransform: "uppercase",
                   fontFamily: "system-ui, -apple-system, sans-serif",
-                  fontWeight: 400,
-                  textShadow: "0 1px 4px rgba(0, 0, 0, 0.4)",
+                  fontWeight: 500,
+                  textShadow: "0 1px 4px rgba(0, 0, 0, 0.6)",
                 }}
               >
-                Scroll
+                TAP ON THE AUTUMN LEAF
               </span>
               <motion.div
                 animate={{ y: [0, 5, 0] }}
@@ -1023,8 +1029,8 @@ export default function Home() {
                 >
                   <path
                     d="M2 2L12 12L22 2"
-                    stroke="rgba(255, 255, 255, 0.65)"
-                    strokeWidth="2.2"
+                    stroke="rgba(255, 255, 255, 0.75)"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
