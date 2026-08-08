@@ -595,7 +595,7 @@ export default function Home() {
                 infoImage="/images/theojesslyn_sauce_cocktail.png"
                 altFood="Sauce"
                 altInfo="Sauce Cocktail"
-                left={`${(150 / 375) * 100}%`}
+                left={`${(142.5 / 375) * 100}%`}
                 top={`calc(${(525 / 677) * 100}dvh - 7%)`}
                 width={`${(306 / 375) * 100}%`}
                 imgWidth={306}
