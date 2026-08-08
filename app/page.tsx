@@ -571,7 +571,7 @@ export default function Home() {
               <div
                 style={{
                   position: "absolute",
-                  left: `${(-90 / 375) * 100}%`,
+                  left: `${(-120 / 375) * 100}%`,
                   top: `calc(${(600 / 677) * 100}dvh - 7%)`,
                   width: `${(337 / 375) * 100}%`,
                   zIndex: 20,
@@ -595,7 +595,7 @@ export default function Home() {
                 infoImage="/images/theojesslyn_sauce_cocktail.png"
                 altFood="Sauce"
                 altInfo="Sauce Cocktail"
-                left={`${(142.5 / 375) * 100}%`}
+                left={`${(135 / 375) * 100}%`}
                 top={`calc(${(525 / 677) * 100}dvh - 7%)`}
                 width={`${(306 / 375) * 100}%`}
                 imgWidth={306}
