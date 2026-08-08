@@ -74,6 +74,59 @@ export function AccommodationSection({ isActive, onClose }: AccommodationSection
         priority
       />
 
+      {/* ── Soft Back Button on Top Left ── */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isActive ? 1 : 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "20px",
+          zIndex: 60,
+          background: "rgba(30, 20, 15, 0.45)",
+          border: "1px solid rgba(255, 245, 230, 0.35)",
+          borderRadius: "20px",
+          padding: "6px 14px 6px 10px",
+          color: "rgba(255, 245, 230, 0.95)",
+          fontSize: "0.75rem",
+          letterSpacing: "0.08em",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          fontWeight: 500,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "5px",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.35)",
+          textShadow: "0 1px 4px rgba(0, 0, 0, 0.6)",
+        }}
+        whileHover={{ scale: 1.04, backgroundColor: "rgba(30, 20, 15, 0.65)" }}
+        whileTap={{ scale: 0.96 }}
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M15 19L8 12L15 5"
+            stroke="rgba(255, 245, 230, 0.95)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span>Back</span>
+      </motion.button>
+
       {/* ── Left Lantern (lantern02) ── */}
       <motion.div
         style={{

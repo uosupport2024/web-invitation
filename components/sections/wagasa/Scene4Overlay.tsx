@@ -87,7 +87,7 @@ export function Scene4Overlay({ scene, onOpen }: Scene4OverlayProps) {
               }}
             >
               <Image
-                src="/images/theojesslyn_button.png"
+                src="/images/theojesslyn_startbutton.png"
                 alt="Welcome Button"
                 fill
                 className="object-contain"

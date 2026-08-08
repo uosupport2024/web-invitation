@@ -26,6 +26,7 @@ interface InteractiveFoodItemProps {
 }
 
 function InteractiveFoodItem({
+  id,
   foodImage,
   infoImage,
   altFood,
@@ -36,109 +37,43 @@ function InteractiveFoodItem({
   imgWidth,
   imgHeight,
   zIndex = 10,
-  floatDelay = 0,
   isRevealed,
   isZoomedOut = false,
   onReveal,
 }: InteractiveFoodItemProps) {
-  const [showParticles, setShowParticles] = useState(false);
-
-  const handleClick = () => {
-    if (isRevealed || isZoomedOut) return;
-    setShowParticles(true);
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isZoomedOut) return;
+    // For normal items, if already revealed, do nothing. For tomato, clicking the revealed silhouette triggers step 2 (somen noodle).
+    if (isRevealed && id !== "tomato") return;
     onReveal();
-    setTimeout(() => setShowParticles(false), 1000);
   };
 
   const shouldShowInfo = isRevealed && !isZoomedOut;
+  const isClickable = !isZoomedOut && (!shouldShowInfo || id === "tomato");
 
   return (
-    <motion.div
-      animate={
-        !shouldShowInfo
-          ? { y: [0, -6, 0] }
-          : { y: 0 }
-      }
-      transition={
-        !shouldShowInfo
-          ? { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: floatDelay }
-          : { duration: 0.4 }
-      }
+    <div
       style={{
         position: "absolute",
         left,
         top,
         width,
-        cursor: shouldShowInfo || isZoomedOut ? "default" : "pointer",
+        cursor: isClickable ? "pointer" : "default",
         zIndex,
       }}
       onClick={handleClick}
-      whileHover={!shouldShowInfo && !isZoomedOut ? { scale: 1.05, filter: "brightness(1.08)" } : undefined}
-      whileTap={!shouldShowInfo && !isZoomedOut ? { scale: 0.95 } : undefined}
     >
-      {/* Particles burst when tapped */}
-      {showParticles && (
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 40 }}>
-          {[
-            { x: -50, y: -60, r: -25 },
-            { x: 55, y: -50, r: 30 },
-            { x: -65, y: 15, r: -45 },
-            { x: 70, y: 20, r: 35 },
-            { x: -35, y: 65, r: -15 },
-            { x: 40, y: 60, r: 40 },
-            { x: 0, y: -75, r: 10 },
-            { x: 0, y: 75, r: -35 },
-          ].map((p, i) => (
-            <motion.span
-              key={i}
-              initial={{ x: 0, y: 0, opacity: 1, scale: 0.5, rotate: 0 }}
-              animate={{ x: p.x, y: p.y, opacity: 0, scale: 1.3, rotate: p.r }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                fontSize: "1.1rem",
-                color: "#F3D5B5",
-                textShadow: "0 0 8px rgba(243,213,181,0.8)",
-                pointerEvents: "none",
-                lineHeight: 1,
-              }}
-            >
-              ✦
-            </motion.span>
-          ))}
-        </div>
-      )}
-
-      {/* Clickability hint pulse aura (when unrevealed & not zoomed out) */}
-      {!shouldShowInfo && !isZoomedOut && (
-        <motion.div
-          animate={{ scale: [0.95, 1.06, 0.95], opacity: [0.25, 0.65, 0.25] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: floatDelay }}
-          style={{
-            position: "absolute",
-            inset: "-4px",
-            borderRadius: "40%",
-            border: "1.5px dashed rgba(255, 230, 190, 0.65)",
-            pointerEvents: "none",
-            filter: "drop-shadow(0 0 6px rgba(255, 220, 160, 0.5))",
-          }}
-        />
-      )}
-
       <AnimatePresence mode="wait">
         {!shouldShowInfo ? (
           <motion.div
             key="food-state"
-            initial={{ opacity: 0, filter: "blur(0px)", scale: 1 }}
-            animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-            exit={{
-              opacity: 0,
-              filter: "blur(8px)",
-              scale: 0.98,
-            }}
-            transition={{ duration: 0.45, ease: "easeInOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
             <Image
               src={foodImage}
@@ -152,25 +87,12 @@ function InteractiveFoodItem({
         ) : (
           <motion.div
             key="info-state"
-            initial={{
-              opacity: 0,
-              filter: "blur(8px)",
-              y: 10,
-              scale: 1.02,
-            }}
-            animate={{
-              opacity: 1,
-              filter: "blur(0px)",
-              y: 0,
-              scale: 1,
-            }}
-            exit={{
-              opacity: 0,
-              filter: "blur(8px)",
-              y: -10,
-              scale: 0.98,
-            }}
-            transition={{ duration: 0.55, ease: [0.25, 1, 0.5, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.45, ease: "easeInOut" }}
+            whileHover={id === "tomato" ? { scale: 1.05 } : undefined}
+            whileTap={id === "tomato" ? { scale: 0.95 } : undefined}
           >
             <Image
               src={infoImage}
@@ -183,7 +105,7 @@ function InteractiveFoodItem({
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
@@ -191,7 +113,10 @@ export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const [isNextPage, setIsNextPage] = useState(false);
   const [showBottomCta, setShowBottomCta] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const [showScrollChevron, setShowScrollChevron] = useState(false);
   const [revealedFoods, setRevealedFoods] = useState<Record<string, boolean>>({});
+  const [isSomenActivated, setIsSomenActivated] = useState(false);
   const [isSomenPulled, setIsSomenPulled] = useState(false);
   const [isSomenFullyPulled, setIsSomenFullyPulled] = useState(false);
   const [showAccomms, setShowAccomms] = useState(false);
@@ -199,25 +124,64 @@ export default function Home() {
   const section3TouchStartY = useRef(0);
   const allowSwipeTransition = useRef(false);
 
+  useEffect(() => {
+    if (isSomenActivated && section3Ref.current) {
+      section3Ref.current.scrollTop = 0;
+    }
+  }, [isSomenActivated]);
+
+  const handleFoodClick = (key: string) => {
+    if (key === "tomato") {
+      if (!revealedFoods["tomato"]) {
+        // Step 1: First click shows the tomato silhouette image
+        setRevealedFoods((prev) => ({ ...prev, tomato: true }));
+      } else if (!isSomenActivated) {
+        // Step 2: Second click on tomato silhouette enters the somen noodle scene
+        setIsSomenActivated(true);
+        if (section3Ref.current) {
+          section3Ref.current.scrollTop = 0;
+        }
+      }
+      return;
+    }
+
+    if (revealedFoods[key]) return;
+    setRevealedFoods((prev) => ({ ...prev, [key]: true }));
+  };
+
   const handleSection3TouchStart = (e: React.TouchEvent) => {
     section3TouchStartY.current = e.touches[0].clientY;
     allowSwipeTransition.current = isSomenFullyPulled;
   };
 
-  const handleSection3TouchMove = (e: React.TouchEvent) => {
-    if (!isSomenFullyPulled || showAccomms || !allowSwipeTransition.current) return;
+  const handleSection3TouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     const touchEndY = e.touches[0].clientY;
     const diffY = section3TouchStartY.current - touchEndY;
-    // Swipe up (diffY > 50) triggers entering the Accommodation section
-    if (diffY > 50) {
+    const scrollTop = e.currentTarget.scrollTop;
+
+    // 1. Swipe down (diffY < -40) at the top of Section 3 -> Return to Section 2 (Pagoda scene)
+    if (scrollTop <= 10 && diffY < -40) {
+      setIsNextPage(false);
+      return;
+    }
+
+    // 2. Swipe up (diffY > 50) when somen is fully pulled -> Go to Accommodation (Section 4)
+    if (isSomenFullyPulled && !showAccomms && allowSwipeTransition.current && diffY > 50) {
       setShowAccomms(true);
     }
   };
 
-  const handleSection3Wheel = (e: React.WheelEvent) => {
-    if (!isSomenFullyPulled || showAccomms) return;
-    // Scroll down (deltaY > 15) triggers entering the Accommodation section
-    if (e.deltaY > 15) {
+  const handleSection3Wheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+
+    // 1. Scroll up (deltaY < -15) at the top of Section 3 -> Return to Section 2 (Pagoda scene)
+    if (scrollTop <= 5 && e.deltaY < -15) {
+      setIsNextPage(false);
+      return;
+    }
+
+    // 2. Scroll down (deltaY > 15) when somen is fully pulled -> Go to Accommodation (Section 4)
+    if (isSomenFullyPulled && !showAccomms && e.deltaY > 15) {
       setShowAccomms(true);
     }
   };
@@ -232,7 +196,7 @@ export default function Home() {
     if (!isOpen || isNextPage || !showBottomCta) return;
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 30;
-    
+
     if (isAtBottom) {
       const touchEndY = e.touches[0].clientY;
       const diffY = section2TouchStartY.current - touchEndY;
@@ -254,24 +218,23 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    if (revealedFoods["tomato"] && section3Ref.current) {
-      section3Ref.current.scrollTop = 0;
-    }
-  }, [revealedFoods]);
 
-  const handleFoodClick = (key: string) => {
-    if (revealedFoods[key]) return;
-    setRevealedFoods((prev) => ({ ...prev, [key]: true }));
-    if (key === "tomato") {
-      if (section3Ref.current) {
-        section3Ref.current.scrollTop = 0;
-      }
+
+  useEffect(() => {
+    if (isOpen && !hasScrolled) {
+      const timer = setTimeout(() => {
+        setShowScrollChevron(true);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [isOpen, hasScrolled]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollTop > 20 && !hasScrolled) {
+      setHasScrolled(true);
+      setShowScrollChevron(false);
+    }
     setShowBottomCta(scrollTop + clientHeight >= scrollHeight - 60);
   };
 
@@ -364,7 +327,7 @@ export default function Home() {
             }}
           >
             <Image
-              src="/images/theojesslyn_names.png"
+              src="/images/theojesslyn_names_dark.png"
               alt="Theodore Otto Hartono & Jesslyn Mulianto"
               fill
               className="object-contain"
@@ -464,13 +427,13 @@ export default function Home() {
               inset: 0,
               zIndex: 3,
               background: "#61291A",
-              overflowY: revealedFoods["tomato"] ? "hidden" : "auto",
+              overflowY: isSomenActivated ? "hidden" : "auto",
               overflowX: "hidden",
             }}
           >
             <motion.div
               animate={{
-                scale: revealedFoods["tomato"] ? 0.62 : 1,
+                scale: isSomenActivated ? 0.62 : 1,
               }}
               transition={{
                 duration: 1.2,
@@ -479,21 +442,76 @@ export default function Home() {
               style={{
                 position: "relative",
                 width: "100%",
-                minHeight: revealedFoods["tomato"]
+                minHeight: isSomenActivated
                   ? `calc(${(784 / 677) * 100 * 0.62}dvh + 48vw)`
                   : `calc(${(784 / 677) * 100}dvh - 10% + 78vw)`,
                 transformOrigin: "top center",
               }}
             >
-              {/* Direction text on Top Left */}
+              {/* Soft Back Button on Top Left */}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: isSomenActivated ? 0 : 1,
+                }}
+                transition={{ duration: 0.4 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsNextPage(false);
+                }}
+                style={{
+                  position: "absolute",
+                  top: "20px",
+                  left: "20px",
+                  zIndex: 50,
+                  background: "rgba(97, 41, 26, 0.65)",
+                  border: "1px solid rgba(243, 213, 181, 0.4)",
+                  borderRadius: "20px",
+                  padding: "6px 14px 6px 10px",
+                  color: "#F3D5B5",
+                  fontSize: "0.75rem",
+                  letterSpacing: "0.08em",
+                  fontFamily: "var(--font-sans), system-ui, sans-serif",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.35)",
+                  pointerEvents: isSomenActivated ? "none" : "auto",
+                }}
+                whileHover={{ scale: 1.04, backgroundColor: "rgba(97, 41, 26, 0.85)" }}
+                whileTap={{ scale: 0.96 }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M15 19L8 12L15 5"
+                    stroke="#F3D5B5"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>Back</span>
+              </motion.button>
+
+              {/* Direction text on Top Left below Back button */}
               <motion.div
                 animate={{
-                  opacity: revealedFoods["tomato"] ? 0 : 1,
+                  opacity: isSomenActivated ? 0 : 1,
                 }}
                 transition={{ duration: 0.4 }}
                 style={{
                   position: "absolute",
-                  top: "24px",
+                  top: "62px",
                   left: "24px",
                   zIndex: 20,
                   pointerEvents: "none",
@@ -502,9 +520,9 @@ export default function Home() {
                 <p
                   style={{
                     margin: 0,
-                    color: "rgba(255, 255, 255, 0.88)",
-                    fontFamily: "var(--font-geist-sans), var(--font-sans), system-ui, sans-serif",
-                    fontSize: "0.75rem",
+                    color: "rgba(243, 213, 181, 0.85)",
+                    fontFamily: "var(--font-sans), system-ui, sans-serif",
+                    fontSize: "0.72rem",
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
                     textShadow: "0 1px 6px rgba(0,0,0,0.6)",
@@ -527,9 +545,8 @@ export default function Home() {
                 width={`${(364 / 375) * 100}%`}
                 imgWidth={364}
                 imgHeight={364}
-                floatDelay={0}
                 isRevealed={!!revealedFoods["onigiri"]}
-                isZoomedOut={!!revealedFoods["tomato"]}
+                isZoomedOut={isSomenActivated}
                 onReveal={() => handleFoodClick("onigiri")}
               />
 
@@ -545,9 +562,8 @@ export default function Home() {
                 width={`${(325 / 375) * 100}%`}
                 imgWidth={325}
                 imgHeight={325}
-                floatDelay={0.6}
                 isRevealed={!!revealedFoods["ricebowl"]}
-                isZoomedOut={!!revealedFoods["tomato"]}
+                isZoomedOut={isSomenActivated}
                 onReveal={() => handleFoodClick("ricebowl")}
               />
 
@@ -585,9 +601,8 @@ export default function Home() {
                 imgWidth={306}
                 imgHeight={306}
                 zIndex={15}
-                floatDelay={1.2}
                 isRevealed={!!revealedFoods["sauce"]}
-                isZoomedOut={!!revealedFoods["tomato"]}
+                isZoomedOut={isSomenActivated}
                 onReveal={() => handleFoodClick("sauce")}
               />
 
@@ -603,9 +618,8 @@ export default function Home() {
                 width={`${(274 / 375) * 100}%`}
                 imgWidth={274}
                 imgHeight={274}
-                floatDelay={0.4}
                 isRevealed={!!revealedFoods["gunkan"]}
-                isZoomedOut={!!revealedFoods["tomato"]}
+                isZoomedOut={isSomenActivated}
                 onReveal={() => handleFoodClick("gunkan")}
               />
 
@@ -616,26 +630,25 @@ export default function Home() {
                 infoImage="/images/theojesslyn_tomato_silhouette.png"
                 altFood="Tomato"
                 altInfo="Tomato Silhouette"
-                left={`${(277 / 375) * 100}%`}
-                top={`calc(${(779 / 677) * 100}dvh - 10%)`}
-                width={`${(153 / 375) * 100}%`}
+                left={`${(245 / 375) * 100}%`}
+                top={`calc(${(850 / 677) * 100}dvh - 10%)`}
+                width={`${(130 / 375) * 100}%`}
                 imgWidth={153}
                 imgHeight={153}
-                floatDelay={0.9}
                 isRevealed={!!revealedFoods["tomato"]}
-                isZoomedOut={!!revealedFoods["tomato"]}
+                isZoomedOut={isSomenActivated}
                 onReveal={() => handleFoodClick("tomato")}
               />
 
               {/* Direction hint: * Pull the Somen */}
               <AnimatePresence mode="wait">
-                {revealedFoods["tomato"] && !isSomenFullyPulled && (
+                {isSomenActivated && !isSomenPulled && !isSomenFullyPulled && (
                   <motion.div
                     key="pull-somen-hint"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
                     onClick={() => {
                       setIsSomenPulled(true);
                       setIsSomenFullyPulled(true);
@@ -643,16 +656,15 @@ export default function Home() {
                     style={{
                       position: "absolute",
                       left: "50%",
-                      top: `calc(${(660 / 677) * 100}dvh - 10%)`,
+                      top: `calc(${(595 / 677) * 100}dvh - 5%)`,
                       transform: "translateX(-50%)",
-                      zIndex: 99999.5,
+                      zIndex: 100001,
                       cursor: "pointer",
                       textAlign: "center",
-                      display: isSomenPulled ? "none" : "block",
                     }}
                   >
                     <motion.div
-                      animate={{ opacity: [0.6, 1, 0.6], y: [0, -6, 0] }}
+                      animate={{ opacity: [0.75, 1, 0.75], y: [0, -6, 0] }}
                       transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
                     >
                       <p
@@ -665,11 +677,11 @@ export default function Home() {
                           textTransform: "uppercase",
                           fontWeight: 600,
                           textShadow: "0 2px 10px rgba(0,0,0,0.9)",
-                          background: "rgba(97,41,26,0.85)",
-                          padding: "8px 16px",
+                          background: "rgba(97,41,26,0.92)",
+                          padding: "8px 18px",
                           borderRadius: "20px",
-                          border: "1.5px dashed rgba(243, 213, 181, 0.7)",
-                          boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
+                          border: "1.5px dashed rgba(243, 213, 181, 0.8)",
+                          boxShadow: "0 4px 15px rgba(0,0,0,0.6)",
                         }}
                       >
                         * Pull the Somen
@@ -687,21 +699,22 @@ export default function Home() {
                 {isSomenFullyPulled && !showAccomms && (
                   <motion.div
                     key="scroll-accomms-hint"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{ duration: 0.4 }}
+                    initial={{ opacity: 0, y: 15, x: "-50%" }}
+                    animate={{ opacity: 1, y: 0, x: "-50%" }}
+                    exit={{ opacity: 0, scale: 0.85, x: "-50%" }}
+                    transition={{ duration: 0.5 }}
+                    onClick={() => setShowAccomms(true)}
                     style={{
                       position: "absolute",
                       left: "50%",
-                      top: `calc(${(660 / 677) * 100}dvh - 10%)`,
-                      transform: "translateX(-50%)",
-                      zIndex: 99999.5,
+                      top: `calc(${(1030 / 677) * 100}dvh - 10%)`,
+                      zIndex: 100001,
                       textAlign: "center",
+                      cursor: "pointer",
                     }}
                   >
                     <motion.div
-                      animate={{ opacity: [0.6, 1, 0.6], y: [0, 6, 0] }}
+                      animate={{ opacity: [0.75, 1, 0.75], y: [0, 5, 0] }}
                       transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
                     >
                       <p
@@ -709,34 +722,34 @@ export default function Home() {
                           margin: 0,
                           color: "#F3D5B5",
                           fontFamily: "var(--font-sans), system-ui, sans-serif",
-                          fontSize: "0.85rem",
+                          fontSize: "0.8rem",
                           letterSpacing: "0.15em",
                           textTransform: "uppercase",
                           fontWeight: 600,
                           textShadow: "0 2px 10px rgba(0,0,0,0.9)",
-                          background: "rgba(97,41,26,0.85)",
-                          padding: "8px 16px",
+                          background: "rgba(97,41,26,0.92)",
+                          padding: "8px 18px",
                           borderRadius: "20px",
-                          border: "1.5px dashed rgba(243, 213, 181, 0.7)",
-                          boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
+                          border: "1.5px dashed rgba(243, 213, 181, 0.8)",
+                          boxShadow: "0 4px 15px rgba(0,0,0,0.6)",
                         }}
                       >
                         Swipe to Next
                       </p>
                       <motion.svg
-                        width="18"
-                        height="10"
+                        width="20"
+                        height="12"
                         viewBox="0 0 18 10"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        animate={{ y: [0, 4, 0], opacity: [0.5, 1, 0.5] }}
+                        animate={{ y: [0, 4, 0], opacity: [0.7, 1, 0.7] }}
                         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                        style={{ display: "block", margin: "6px auto 0" }}
+                        style={{ display: "block", margin: "6px auto 0", filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.4))" }}
                       >
                         <path
                           d="M1 1L9 9L17 1"
-                          stroke="#F3D5B5"
-                          strokeWidth="2"
+                          stroke="#4A1E13"
+                          strokeWidth="2.8"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
@@ -748,7 +761,7 @@ export default function Home() {
 
               {/* Bowl Back — appears at very bottom of page (zIndex: 99998) */}
               <AnimatePresence>
-                {revealedFoods["tomato"] && (
+                {isSomenActivated && (
                   <motion.div
                     initial={{ opacity: 0, y: 250 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -777,11 +790,14 @@ export default function Home() {
 
               {/* Somen — enlarged by 10% & raised 20% higher, draggable upward with swaying & 10% right shift (zIndex: 99999) */}
               <AnimatePresence>
-                {revealedFoods["tomato"] && (
+                {isSomenActivated && (
                   <motion.div
                     drag="y"
                     dragConstraints={{ top: -530, bottom: 0 }}
                     dragElastic={0.15}
+                    onDragStart={() => {
+                      setIsSomenPulled(true);
+                    }}
                     onPointerDown={(e) => {
                       e.stopPropagation();
                       setIsSomenPulled(true);
@@ -852,7 +868,7 @@ export default function Home() {
 
               {/* Bowl Front — appears at very bottom of page (zIndex: 100000) */}
               <AnimatePresence>
-                {revealedFoods["tomato"] && (
+                {isSomenActivated && (
                   <motion.div
                     initial={{ opacity: 0, y: 250 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -893,6 +909,131 @@ export default function Home() {
 
       {/* ── Falling Leaves overlay (visible on section 2) ── */}
       <FallingLeaves visible={isOpen && !isNextPage} count={18} />
+
+      {/* ── Soft Back Button on Section 2 (returns to Wagasa intro cover) ── */}
+      <AnimatePresence>
+        {isOpen && !isNextPage && (
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+            style={{
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              zIndex: 65,
+              background: "rgba(30, 20, 15, 0.45)",
+              border: "1px solid rgba(255, 245, 230, 0.35)",
+              borderRadius: "20px",
+              padding: "6px 14px 6px 10px",
+              color: "rgba(255, 245, 230, 0.95)",
+              fontSize: "0.75rem",
+              letterSpacing: "0.08em",
+              fontFamily: "system-ui, -apple-system, sans-serif",
+              fontWeight: 500,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.35)",
+              textShadow: "0 1px 4px rgba(0, 0, 0, 0.6)",
+            }}
+            whileHover={{ scale: 1.04, backgroundColor: "rgba(30, 20, 15, 0.65)" }}
+            whileTap={{ scale: 0.96 }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M15 19L8 12L15 5"
+                stroke="rgba(255, 245, 230, 0.95)"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>Back</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* ── Initial Scroll Guidance Chevron Down (appears after 1s, disappears when user scrolls) ── */}
+      <AnimatePresence>
+        {isOpen && !isNextPage && showScrollChevron && !hasScrolled && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "28px",
+              left: 0,
+              right: 0,
+              zIndex: 60,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              pointerEvents: "none",
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "3px",
+              }}
+            >
+              <span
+                style={{
+                  color: "rgba(255, 255, 255, 0.6)",
+                  fontSize: "0.65rem",
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  fontFamily: "system-ui, -apple-system, sans-serif",
+                  fontWeight: 400,
+                  textShadow: "0 1px 4px rgba(0, 0, 0, 0.4)",
+                }}
+              >
+                Scroll
+              </span>
+              <motion.div
+                animate={{ y: [0, 5, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.35))" }}
+              >
+                <svg
+                  width="22"
+                  height="13"
+                  viewBox="0 0 24 14"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2 2L12 12L22 2"
+                    stroke="rgba(255, 255, 255, 0.65)"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </motion.div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ── Bottom CTA: "Tap on the Autumn Leaf" (Only visible when scrolled to bottom) ── */}
       <AnimatePresence>
