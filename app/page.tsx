@@ -60,7 +60,7 @@ function InteractiveFoodItem({
         top,
         width,
         cursor: isClickable ? "pointer" : "default",
-        zIndex,
+        zIndex: shouldShowInfo ? Math.max(zIndex + 15, 30) : zIndex,
       }}
       onClick={handleClick}
     >
@@ -112,17 +112,17 @@ function InteractiveFoodItem({
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const [isNextPage, setIsNextPage] = useState(false);
-  const [showBottomCta, setShowBottomCta] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
-  const [showScrollChevron, setShowScrollChevron] = useState(false);
   const [revealedFoods, setRevealedFoods] = useState<Record<string, boolean>>({});
   const [isSomenActivated, setIsSomenActivated] = useState(false);
   const [isSomenPulled, setIsSomenPulled] = useState(false);
   const [isSomenFullyPulled, setIsSomenFullyPulled] = useState(false);
   const [showAccomms, setShowAccomms] = useState(false);
+  const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
   const section3TouchStartY = useRef(0);
   const allowSwipeTransition = useRef(false);
+  const somenWasActivatedOnTouchStart = useRef(false);
+  const lastSomenDeactivateTime = useRef(0);
 
   useEffect(() => {
     if (isSomenActivated && section3Ref.current) {
@@ -151,6 +151,7 @@ export default function Home() {
 
   const handleSection3TouchStart = (e: React.TouchEvent) => {
     section3TouchStartY.current = e.touches[0].clientY;
+    somenWasActivatedOnTouchStart.current = isSomenActivated;
     allowSwipeTransition.current = isSomenFullyPulled;
   };
 
@@ -159,9 +160,20 @@ export default function Home() {
     const diffY = section3TouchStartY.current - touchEndY;
     const scrollTop = e.currentTarget.scrollTop;
 
-    // 1. Swipe down (diffY < -40) at the top of Section 3 -> Return to Section 2 (Pagoda scene)
+    // 1. Swipe down (diffY < -40) at the top of Section 3
     if (scrollTop <= 10 && diffY < -40) {
-      setIsNextPage(false);
+      if (somenWasActivatedOnTouchStart.current) {
+        if (isSomenActivated) {
+          setIsSomenActivated(false);
+          setIsSomenPulled(false);
+          setIsSomenFullyPulled(false);
+          lastSomenDeactivateTime.current = Date.now();
+        }
+      } else {
+        if (Date.now() - lastSomenDeactivateTime.current > 600) {
+          setIsNextPage(false);
+        }
+      }
       return;
     }
 
@@ -174,9 +186,18 @@ export default function Home() {
   const handleSection3Wheel = (e: React.WheelEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
 
-    // 1. Scroll up (deltaY < -15) at the top of Section 3 -> Return to Section 2 (Pagoda scene)
+    // 1. Scroll up (deltaY < -15) at the top of Section 3
     if (scrollTop <= 5 && e.deltaY < -15) {
-      setIsNextPage(false);
+      if (isSomenActivated) {
+        setIsSomenActivated(false);
+        setIsSomenPulled(false);
+        setIsSomenFullyPulled(false);
+        lastSomenDeactivateTime.current = Date.now();
+      } else {
+        if (Date.now() - lastSomenDeactivateTime.current > 800) {
+          setIsNextPage(false);
+        }
+      }
       return;
     }
 
@@ -193,7 +214,7 @@ export default function Home() {
   };
 
   const handleSection2TouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isOpen || isNextPage || !showBottomCta) return;
+    if (!isOpen || isNextPage) return;
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 30;
 
@@ -208,7 +229,7 @@ export default function Home() {
   };
 
   const handleSection2Wheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (!isOpen || isNextPage || !showBottomCta) return;
+    if (!isOpen || isNextPage) return;
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 30;
 
@@ -218,24 +239,22 @@ export default function Home() {
     }
   };
 
-
-
-  useEffect(() => {
-    if (isOpen && !hasScrolled) {
-      const timer = setTimeout(() => {
-        setShowScrollChevron(true);
-      }, 1000);
-      return () => clearTimeout(timer);
+  const handleAutumnLeafTap = () => {
+    if (!section2Ref.current) {
+      setIsNextPage(true);
+      return;
     }
-  }, [isOpen, hasScrolled]);
+    const { scrollTop, clientHeight, scrollHeight } = section2Ref.current;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 80;
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollTop > 20 && !hasScrolled) {
-      setHasScrolled(true);
-      setShowScrollChevron(false);
+    if (isAtBottom) {
+      setIsNextPage(true);
+    } else {
+      section2Ref.current.scrollTo({
+        top: scrollHeight - clientHeight,
+        behavior: "smooth",
+      });
     }
-    setShowBottomCta(scrollTop + clientHeight >= scrollHeight - 60);
   };
 
   return (
@@ -264,10 +283,10 @@ export default function Home() {
 
       {/* ── Section 2: bgscroll.png + overlays ── */}
       <motion.div
+        ref={section2Ref}
         initial={{ y: "100%" }}
         animate={{ y: isOpen ? "0%" : "100%" }}
         transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
-        onScroll={handleScroll}
         onWheel={handleSection2Wheel}
         onTouchStart={handleSection2TouchStart}
         onTouchMove={handleSection2TouchMove}
@@ -431,6 +450,68 @@ export default function Home() {
               overflowX: "hidden",
             }}
           >
+            {/* Soft Back Button on Top Left (Fixed so it stays visible & unscaled in Somen mode) */}
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isSomenActivated) {
+                  setIsSomenActivated(false);
+                  setIsSomenPulled(false);
+                  setIsSomenFullyPulled(false);
+                  lastSomenDeactivateTime.current = Date.now();
+                } else {
+                  if (Date.now() - lastSomenDeactivateTime.current > 400) {
+                    setIsNextPage(false);
+                  }
+                }
+              }}
+              style={{
+                position: "fixed",
+                top: "20px",
+                left: "20px",
+                zIndex: 100005,
+                background: "rgba(97, 41, 26, 0.75)",
+                border: "1px solid rgba(243, 213, 181, 0.4)",
+                borderRadius: "20px",
+                padding: "6px 14px 6px 10px",
+                color: "#F3D5B5",
+                fontSize: "0.75rem",
+                letterSpacing: "0.08em",
+                fontFamily: "var(--font-sans), system-ui, sans-serif",
+                fontWeight: 500,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.35)",
+                pointerEvents: "auto",
+              }}
+              whileHover={{ scale: 1.04, backgroundColor: "rgba(97, 41, 26, 0.9)" }}
+              whileTap={{ scale: 0.96 }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15 19L8 12L15 5"
+                  stroke="#F3D5B5"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>Back</span>
+            </motion.button>
+
             <motion.div
               animate={{
                 scale: isSomenActivated ? 0.62 : 1,
@@ -448,60 +529,6 @@ export default function Home() {
                 transformOrigin: "top center",
               }}
             >
-              {/* Soft Back Button on Top Left */}
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{
-                  opacity: isSomenActivated ? 0 : 1,
-                }}
-                transition={{ duration: 0.4 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsNextPage(false);
-                }}
-                style={{
-                  position: "absolute",
-                  top: "20px",
-                  left: "20px",
-                  zIndex: 50,
-                  background: "rgba(97, 41, 26, 0.65)",
-                  border: "1px solid rgba(243, 213, 181, 0.4)",
-                  borderRadius: "20px",
-                  padding: "6px 14px 6px 10px",
-                  color: "#F3D5B5",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
-                  fontFamily: "var(--font-sans), system-ui, sans-serif",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  backdropFilter: "blur(8px)",
-                  WebkitBackdropFilter: "blur(8px)",
-                  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.35)",
-                  pointerEvents: isSomenActivated ? "none" : "auto",
-                }}
-                whileHover={{ scale: 1.04, backgroundColor: "rgba(97, 41, 26, 0.85)" }}
-                whileTap={{ scale: 0.96 }}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M15 19L8 12L15 5"
-                    stroke="#F3D5B5"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span>Back</span>
-              </motion.button>
 
               {/* Direction text on Top Left below Back button */}
               <motion.div
@@ -911,7 +938,7 @@ export default function Home() {
       <FallingLeaves
         visible={isOpen && !isNextPage}
         count={18}
-        onLeafClick={() => setIsNextPage(true)}
+        onLeafClick={handleAutumnLeafTap}
       />
 
       {/* ── Soft Back Button on Section 2 (returns to Wagasa intro cover) ── */}
@@ -972,84 +999,15 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* ── Initial Scroll Guidance Chevron Down (appears after 1s, disappears when user scrolls) ── */}
+      {/* ── Permanent Bottom CTA on Section 2: "TAP ON THE AUTUMN LEAF" ── */}
       <AnimatePresence>
-        {isOpen && !isNextPage && showScrollChevron && !hasScrolled && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: "28px",
-              left: 0,
-              right: 0,
-              zIndex: 60,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              pointerEvents: "auto",
-              cursor: "pointer",
-            }}
-            onClick={() => setIsNextPage(true)}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 12 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "3px",
-              }}
-            >
-              <span
-                style={{
-                  color: "rgba(255, 255, 255, 0.75)",
-                  fontSize: "0.68rem",
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  fontFamily: "system-ui, -apple-system, sans-serif",
-                  fontWeight: 500,
-                  textShadow: "0 1px 4px rgba(0, 0, 0, 0.6)",
-                }}
-              >
-                TAP ON THE AUTUMN LEAF
-              </span>
-              <motion.div
-                animate={{ y: [0, 5, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.35))" }}
-              >
-                <svg
-                  width="22"
-                  height="13"
-                  viewBox="0 0 24 14"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M2 2L12 12L22 2"
-                    stroke="rgba(255, 255, 255, 0.75)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </motion.div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Bottom CTA: "Tap on the Autumn Leaf" (Only visible when scrolled to bottom) ── */}
-      <AnimatePresence>
-        {isOpen && !isNextPage && showBottomCta && (
+        {isOpen && !isNextPage && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.4 }}
-            onClick={() => setIsNextPage(true)}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            onClick={handleAutumnLeafTap}
             style={{
               position: "fixed",
               bottom: 0,
@@ -1061,42 +1019,47 @@ export default function Home() {
               justifyContent: "center",
               alignItems: "center",
               cursor: "pointer",
-              background: "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)",
+              background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)",
+              pointerEvents: "auto",
             }}
           >
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
               <p
                 style={{
                   margin: 0,
-                  color: "rgba(255,255,255,0.85)",
+                  color: "rgba(255, 255, 255, 0.9)",
                   fontFamily: "var(--font-geist-sans), var(--font-sans), system-ui, sans-serif",
                   fontSize: "0.75rem",
                   letterSpacing: "0.18em",
                   textTransform: "uppercase",
                   textAlign: "center",
-                  textShadow: "0 1px 6px rgba(0,0,0,0.6)",
-                  fontWeight: 500,
+                  textShadow: "0 1px 6px rgba(0,0,0,0.7)",
+                  fontWeight: 600,
                 }}
               >
-                Tap on the Autumn Leaf
+                TAP ON THE AUTUMN LEAF
               </p>
-              <motion.svg
-                width="18"
-                height="10"
-                viewBox="0 0 18 10"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                animate={{ y: [0, 4, 0], opacity: [0.4, 1, 0.4] }}
+              <motion.div
+                animate={{ y: [0, 5, 0], opacity: [0.6, 1, 0.6] }}
                 transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.5))" }}
               >
-                <path
-                  d="M1 1L9 9L17 1"
-                  stroke="rgba(255,255,255,0.85)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </motion.svg>
+                <svg
+                  width="20"
+                  height="11"
+                  viewBox="0 0 18 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M1 1L9 9L17 1"
+                    stroke="rgba(255, 255, 255, 0.9)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </motion.div>
             </div>
           </motion.div>
         )}
