@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { WagasaSection } from "@/components/sections/WagasaSection";
 import { FallingLeaves } from "@/components/FallingLeaves";
 import { AccommodationSection } from "@/components/sections/AccommodationSection";
+import { InstructionPill } from "@/components/InstructionPill";
 
 interface InteractiveFoodItemProps {
   id: string;
@@ -117,6 +118,7 @@ export default function Home() {
   const [isSomenPulled, setIsSomenPulled] = useState(false);
   const [isSomenFullyPulled, setIsSomenFullyPulled] = useState(false);
   const [showAccomms, setShowAccomms] = useState(false);
+  const [isSection2AtBottom, setIsSection2AtBottom] = useState(false);
   const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
   const section3TouchStartY = useRef(0);
@@ -125,10 +127,10 @@ export default function Home() {
   const lastSomenDeactivateTime = useRef(0);
 
   useEffect(() => {
-    if (isSomenActivated && section3Ref.current) {
+    if (section3Ref.current) {
       section3Ref.current.scrollTop = 0;
     }
-  }, [isSomenActivated]);
+  }, [isSomenActivated, isNextPage, showAccomms]);
 
   const handleFoodClick = (key: string) => {
     if (key === "tomato") {
@@ -209,6 +211,12 @@ export default function Home() {
 
   const section2TouchStartY = useRef(0);
 
+  const handleSection2Scroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    const atBottom = scrollTop + clientHeight >= scrollHeight - 120;
+    setIsSection2AtBottom(atBottom);
+  };
+
   const handleSection2TouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     section2TouchStartY.current = e.touches[0].clientY;
   };
@@ -287,6 +295,7 @@ export default function Home() {
         initial={{ y: "100%" }}
         animate={{ y: isOpen ? "0%" : "100%" }}
         transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
+        onScroll={handleSection2Scroll}
         onWheel={handleSection2Wheel}
         onTouchStart={handleSection2TouchStart}
         onTouchMove={handleSection2TouchMove}
@@ -524,40 +533,27 @@ export default function Home() {
                 position: "relative",
                 width: "100%",
                 minHeight: isSomenActivated
-                  ? `calc(${(784 / 677) * 100 * 0.62}dvh + 48vw)`
-                  : `calc(${(784 / 677) * 100}dvh - 10% + 78vw)`,
+                  ? "100dvh"
+                  : `calc(${(850 / 677) * 100}dvh - 10% + 35vw)`,
                 transformOrigin: "top center",
               }}
             >
 
-              {/* Direction text on Top Left below Back button */}
+              {/* Direction text fixed on Top Center when food menu is active */}
               <motion.div
                 animate={{
                   opacity: isSomenActivated ? 0 : 1,
                 }}
                 transition={{ duration: 0.4 }}
                 style={{
-                  position: "absolute",
+                  position: "fixed",
                   top: "62px",
-                  left: "24px",
-                  zIndex: 20,
+                  left: "20px",
+                  zIndex: 100004,
                   pointerEvents: "none",
                 }}
               >
-                <p
-                  style={{
-                    margin: 0,
-                    color: "rgba(243, 213, 181, 0.85)",
-                    fontFamily: "var(--font-sans), system-ui, sans-serif",
-                    fontSize: "0.72rem",
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    textShadow: "0 1px 6px rgba(0,0,0,0.6)",
-                    fontWeight: 500,
-                  }}
-                >
-                  * Tap on each Food
-                </p>
+                <InstructionPill text="TAP ON EACH FOOD" />
               </motion.div>
 
               {/* Onigiri */}
@@ -672,9 +668,9 @@ export default function Home() {
                 {isSomenActivated && !isSomenPulled && !isSomenFullyPulled && (
                   <motion.div
                     key="pull-somen-hint"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
+                    initial={{ opacity: 0, y: 10, x: "-50%" }}
+                    animate={{ opacity: 1, y: 0, x: "-50%" }}
+                    exit={{ opacity: 0, scale: 0.85, x: "-50%" }}
                     transition={{ duration: 0.4, delay: 0.3 }}
                     onClick={() => {
                       setIsSomenPulled(true);
@@ -684,39 +680,16 @@ export default function Home() {
                       position: "absolute",
                       left: "50%",
                       top: `calc(${(595 / 677) * 100}dvh - 5%)`,
-                      transform: "translateX(-50%)",
                       zIndex: 100001,
                       cursor: "pointer",
                       textAlign: "center",
                     }}
                   >
-                    <motion.div
-                      animate={{ opacity: [0.75, 1, 0.75], y: [0, -6, 0] }}
-                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "#F3D5B5",
-                          fontFamily: "var(--font-sans), system-ui, sans-serif",
-                          fontSize: "0.85rem",
-                          letterSpacing: "0.15em",
-                          textTransform: "uppercase",
-                          fontWeight: 600,
-                          textShadow: "0 2px 10px rgba(0,0,0,0.9)",
-                          background: "rgba(97,41,26,0.92)",
-                          padding: "8px 18px",
-                          borderRadius: "20px",
-                          border: "1.5px dashed rgba(243, 213, 181, 0.8)",
-                          boxShadow: "0 4px 15px rgba(0,0,0,0.6)",
-                        }}
-                      >
-                        * Pull the Somen
-                      </p>
-                      <span style={{ fontSize: "1.3rem", color: "#F3D5B5", display: "block", marginTop: "2px" }}>
-                        ↑
-                      </span>
-                    </motion.div>
+                    <InstructionPill
+                      text="* PULL THE SOMEN"
+                      showArrow={true}
+                      arrowDirection="up"
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -740,48 +713,11 @@ export default function Home() {
                       cursor: "pointer",
                     }}
                   >
-                    <motion.div
-                      animate={{ opacity: [0.75, 1, 0.75], y: [0, 5, 0] }}
-                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "#F3D5B5",
-                          fontFamily: "var(--font-sans), system-ui, sans-serif",
-                          fontSize: "0.8rem",
-                          letterSpacing: "0.15em",
-                          textTransform: "uppercase",
-                          fontWeight: 600,
-                          textShadow: "0 2px 10px rgba(0,0,0,0.9)",
-                          background: "rgba(97,41,26,0.92)",
-                          padding: "8px 18px",
-                          borderRadius: "20px",
-                          border: "1.5px dashed rgba(243, 213, 181, 0.8)",
-                          boxShadow: "0 4px 15px rgba(0,0,0,0.6)",
-                        }}
-                      >
-                        Swipe to Next
-                      </p>
-                      <motion.svg
-                        width="20"
-                        height="12"
-                        viewBox="0 0 18 10"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        animate={{ y: [0, 4, 0], opacity: [0.7, 1, 0.7] }}
-                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                        style={{ display: "block", margin: "6px auto 0", filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.4))" }}
-                      >
-                        <path
-                          d="M1 1L9 9L17 1"
-                          stroke="#4A1E13"
-                          strokeWidth="2.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </motion.svg>
-                    </motion.div>
+                    <InstructionPill
+                      text="* SWIPE TO NEXT"
+                      showArrow={true}
+                      arrowDirection="down"
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -999,68 +935,32 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* ── Permanent Bottom CTA on Section 2: "TAP ON THE AUTUMN LEAF" ── */}
+      {/* ── Bottom CTA on Section 2: "TAP ON THE AUTUMN LEAF" (Only visible when scrolled to bottom) ── */}
       <AnimatePresence>
-        {isOpen && !isNextPage && (
+        {isOpen && !isNextPage && isSection2AtBottom && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 20, x: "-50%" }}
             transition={{ duration: 0.5, ease: "easeOut" }}
             onClick={handleAutumnLeafTap}
             style={{
               position: "fixed",
-              bottom: 0,
-              left: 0,
-              right: 0,
+              bottom: "24px",
+              left: "50%",
               zIndex: 60,
-              padding: "20px 0 28px",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               cursor: "pointer",
-              background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)",
               pointerEvents: "auto",
             }}
           >
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-              <p
-                style={{
-                  margin: 0,
-                  color: "rgba(255, 255, 255, 0.9)",
-                  fontFamily: "var(--font-geist-sans), var(--font-sans), system-ui, sans-serif",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  textAlign: "center",
-                  textShadow: "0 1px 6px rgba(0,0,0,0.7)",
-                  fontWeight: 600,
-                }}
-              >
-                TAP ON THE AUTUMN LEAF
-              </p>
-              <motion.div
-                animate={{ y: [0, 5, 0], opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                style={{ filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.5))" }}
-              >
-                <svg
-                  width="20"
-                  height="11"
-                  viewBox="0 0 18 10"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M1 1L9 9L17 1"
-                    stroke="rgba(255, 255, 255, 0.9)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </motion.div>
-            </div>
+            <InstructionPill
+              text="TAP ON THE AUTUMN LEAF"
+              showArrow={true}
+              arrowDirection="down"
+            />
           </motion.div>
         )}
       </AnimatePresence>
