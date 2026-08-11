@@ -37,16 +37,16 @@ export function InstructionPill({
           margin: 0,
           color: "#F3D5B5",
           fontFamily: "var(--font-sans), system-ui, sans-serif",
-          fontSize: "0.8rem",
+          fontSize: "0.92rem",
           letterSpacing: "0.15em",
           textTransform: "uppercase",
           fontWeight: 600,
           textShadow: "0 2px 10px rgba(0,0,0,0.9)",
-          background: "rgba(97, 41, 26, 0.92)",
-          padding: "8px 20px",
+          background: "rgba(97, 41, 26, 0.94)",
+          padding: "10px 24px",
           borderRadius: "9999px",
-          border: "1.5px dashed rgba(243, 213, 181, 0.8)",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.6)",
+          border: "1.5px dashed rgba(243, 213, 181, 0.85)",
+          boxShadow: "0 4px 18px rgba(0,0,0,0.65)",
           backdropFilter: "blur(6px)",
           WebkitBackdropFilter: "blur(6px)",
           whiteSpace: "nowrap",
@@ -59,12 +59,12 @@ export function InstructionPill({
         <motion.div
           animate={{ y: arrowDirection === "up" ? [0, -3, 0] : [0, 3, 0] }}
           transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-          style={{ marginTop: "4px", filter: "drop-shadow(0 2px 5px rgba(0,0,0,0.7))" }}
+          style={{ marginTop: "5px", filter: "drop-shadow(0 2px 5px rgba(0,0,0,0.7))" }}
         >
           {arrowDirection === "up" ? (
             <span
               style={{
-                fontSize: "1.3rem",
+                fontSize: "1.5rem",
                 color: "#F3D5B5",
                 display: "block",
                 lineHeight: 1,
@@ -75,8 +75,8 @@ export function InstructionPill({
             </span>
           ) : (
             <svg
-              width="18"
-              height="10"
+              width="22"
+              height="12"
               viewBox="0 0 18 10"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
