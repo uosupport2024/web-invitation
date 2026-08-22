@@ -12,7 +12,7 @@ interface Scene4OverlayProps {
 export function Scene4Overlay({ scene, onOpen }: Scene4OverlayProps) {
   return (
     <>
-      {/* Scene 4 Header Text Image Assets (The Wedding Of & Theodore & Jesslyn) */}
+      {/* Scene 4 Header Text Image Asset (Revised Title) */}
       <AnimatePresence>
         {scene === "scene4" && (
           <motion.div
@@ -22,32 +22,20 @@ export function Scene4Overlay({ scene, onOpen }: Scene4OverlayProps) {
             transition={{ duration: 1.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             style={{
               position: "absolute",
-              top: "14%",
+              top: "12%",
               left: 0,
               right: 0,
               zIndex: 20,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 12,
               pointerEvents: "none",
             }}
           >
-            {/* THE WEDDING OF Image */}
-            <div style={{ position: "relative", width: "42%", aspectRatio: "289 / 35" }}>
+            {/* Revised Title Image */}
+            <div style={{ position: "relative", width: "65%", aspectRatio: "519 / 277" }}>
               <Image
-                src="/images/theojesslyn_theweddingof.png"
-                alt="The Wedding Of"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
-
-            {/* THEODORE & JESSLYN Name Image */}
-            <div style={{ position: "relative", width: "75%", aspectRatio: "660 / 67" }}>
-              <Image
-                src="/images/theojesslyn_namebuatcover.png"
+                src="/images/theojess_revisedtitle.png"
                 alt="Theodore & Jesslyn"
                 fill
                 className="object-contain"

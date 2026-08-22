@@ -7,6 +7,15 @@ import { WagasaSection } from "@/components/sections/WagasaSection";
 import { FallingLeaves } from "@/components/FallingLeaves";
 import { AccommodationSection } from "@/components/sections/AccommodationSection";
 import { InstructionPill } from "@/components/InstructionPill";
+import { ScrollChevron } from "@/components/ScrollChevron";
+
+interface MapLink {
+  url: string;
+  left: string;
+  top: string;
+  color?: string;
+  ariaLabel: string;
+}
 
 interface InteractiveFoodItemProps {
   id: string;
@@ -23,6 +32,7 @@ interface InteractiveFoodItemProps {
   floatDelay?: number;
   isRevealed: boolean;
   isZoomedOut?: boolean;
+  mapLinks?: MapLink[];
   onReveal: () => void;
 }
 
@@ -40,6 +50,7 @@ function InteractiveFoodItem({
   zIndex = 10,
   isRevealed,
   isZoomedOut = false,
+  mapLinks,
   onReveal,
 }: InteractiveFoodItemProps) {
   const handleClick = (e: React.MouseEvent) => {
@@ -94,6 +105,7 @@ function InteractiveFoodItem({
             transition={{ duration: 0.45, ease: "easeInOut" }}
             whileHover={id === "tomato" ? { scale: 1.05 } : undefined}
             whileTap={id === "tomato" ? { scale: 0.95 } : undefined}
+            style={{ position: "relative" }}
           >
             <Image
               src={infoImage}
@@ -103,6 +115,49 @@ function InteractiveFoodItem({
               style={{ width: "100%", height: "auto", display: "block" }}
               priority
             />
+
+            {mapLinks &&
+              mapLinks.map((link, idx) => (
+                <motion.a
+                  key={idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={link.ariaLabel}
+                  onClick={(e) => e.stopPropagation()}
+                  whileHover={{ scale: 1.25 }}
+                  whileTap={{ scale: 0.9 }}
+                  style={{
+                    position: "absolute",
+                    left: link.left,
+                    top: link.top,
+                    transform: "translate(-50%, -50%)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "6px",
+                    cursor: "pointer",
+                    zIndex: 35,
+                    textDecoration: "none",
+                    filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.6))",
+                  }}
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke={link.color || "#FFFFFF"}
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </motion.a>
+              ))}
           </motion.div>
         )}
       </AnimatePresence>
@@ -119,6 +174,9 @@ export default function Home() {
   const [isSomenFullyPulled, setIsSomenFullyPulled] = useState(false);
   const [showAccomms, setShowAccomms] = useState(false);
   const [isSection2AtBottom, setIsSection2AtBottom] = useState(false);
+  const [isSection2Scrolled, setIsSection2Scrolled] = useState(false);
+  const [isSection3AtBottom, setIsSection3AtBottom] = useState(false);
+  const [isSection3Scrolled, setIsSection3Scrolled] = useState(false);
   const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
   const section3TouchStartY = useRef(0);
@@ -130,6 +188,8 @@ export default function Home() {
     if (section3Ref.current) {
       section3Ref.current.scrollTop = 0;
     }
+    setIsSection3AtBottom(false);
+    setIsSection3Scrolled(false);
   }, [isSomenActivated, isNextPage, showAccomms]);
 
   const handleFoodClick = (key: string) => {
@@ -209,12 +269,40 @@ export default function Home() {
     }
   };
 
+  const handleSection3Scroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    const atBottom = scrollTop + clientHeight >= scrollHeight - 60;
+    setIsSection3AtBottom(atBottom);
+    setIsSection3Scrolled(scrollTop > 20);
+  };
+
+  const scrollSection2Down = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (section2Ref.current) {
+      section2Ref.current.scrollBy({
+        top: window.innerHeight * 0.75,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const scrollSection3Down = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (section3Ref.current) {
+      section3Ref.current.scrollBy({
+        top: window.innerHeight * 0.7,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const section2TouchStartY = useRef(0);
 
   const handleSection2Scroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     const atBottom = scrollTop + clientHeight >= scrollHeight - 120;
     setIsSection2AtBottom(atBottom);
+    setIsSection2Scrolled(scrollTop > 20);
   };
 
   const handleSection2TouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -447,6 +535,7 @@ export default function Home() {
             animate={{ y: "0%" }}
             exit={{ y: "100%" }}
             transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
+            onScroll={handleSection3Scroll}
             onWheel={handleSection3Wheel}
             onTouchStart={handleSection3TouchStart}
             onTouchMove={handleSection3TouchMove}
@@ -521,6 +610,27 @@ export default function Home() {
               <span>Back</span>
             </motion.button>
 
+            {/* Direction text fixed on Top Left when food menu is active */}
+            <AnimatePresence>
+              {!isSomenActivated && !isSection3Scrolled && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  style={{
+                    position: "fixed",
+                    top: "62px",
+                    left: "20px",
+                    zIndex: 100004,
+                    pointerEvents: "none",
+                  }}
+                >
+                  <InstructionPill text="TAP EACH FOOD" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <motion.div
               animate={{
                 scale: isSomenActivated ? 0.62 : 1,
@@ -539,23 +649,6 @@ export default function Home() {
               }}
             >
 
-              {/* Direction text fixed on Top Center when food menu is active */}
-              <motion.div
-                animate={{
-                  opacity: isSomenActivated ? 0 : 1,
-                }}
-                transition={{ duration: 0.4 }}
-                style={{
-                  position: "fixed",
-                  top: "62px",
-                  left: "20px",
-                  zIndex: 100004,
-                  pointerEvents: "none",
-                }}
-              >
-                <InstructionPill text="TAP ON EACH FOOD" />
-              </motion.div>
-
               {/* Onigiri */}
               <InteractiveFoodItem
                 id="onigiri"
@@ -570,6 +663,15 @@ export default function Home() {
                 imgHeight={364}
                 isRevealed={!!revealedFoods["onigiri"]}
                 isZoomedOut={isSomenActivated}
+                mapLinks={[
+                  {
+                    url: "https://maps.app.goo.gl/25vec9h4CoArVZAM6?g_st=ipc",
+                    left: "47.5%",
+                    top: "74.8%",
+                    color: "#FFFFFF",
+                    ariaLabel: "SAAMI Google Maps Location",
+                  },
+                ]}
                 onReveal={() => handleFoodClick("onigiri")}
               />
 
@@ -587,6 +689,15 @@ export default function Home() {
                 imgHeight={325}
                 isRevealed={!!revealedFoods["ricebowl"]}
                 isZoomedOut={isSomenActivated}
+                mapLinks={[
+                  {
+                    url: "https://maps.app.goo.gl/HUVre8hNoui6zNFY8?g_st=ipc",
+                    left: "45.5%",
+                    top: "61.5%",
+                    color: "#FFFFFF",
+                    ariaLabel: "KODAIJI JUGYUAN Google Maps Location",
+                  },
+                ]}
                 onReveal={() => handleFoodClick("ricebowl")}
               />
 
@@ -626,6 +737,15 @@ export default function Home() {
                 zIndex={15}
                 isRevealed={!!revealedFoods["sauce"]}
                 isZoomedOut={isSomenActivated}
+                mapLinks={[
+                  {
+                    url: "https://maps.app.goo.gl/QHi3UtwnUG2kwGZRA?g_st=ipc",
+                    left: "56.0%",
+                    top: "72.5%",
+                    color: "#8F381E",
+                    ariaLabel: "FOUR SEASONS KYOTO Google Maps Location",
+                  },
+                ]}
                 onReveal={() => handleFoodClick("sauce")}
               />
 
@@ -643,6 +763,22 @@ export default function Home() {
                 imgHeight={274}
                 isRevealed={!!revealedFoods["gunkan"]}
                 isZoomedOut={isSomenActivated}
+                mapLinks={[
+                  {
+                    url: "https://maps.app.goo.gl/QHi3UtwnUG2kwGZRA?g_st=ipc",
+                    left: "45.5%",
+                    top: "45.0%",
+                    color: "#FFFFFF",
+                    ariaLabel: "FOUR SEASONS KYOTO Google Maps Location",
+                  },
+                  {
+                    url: "https://maps.app.goo.gl/TYygXMnss3Up4NeLA?g_st=ipc",
+                    left: "48.0%",
+                    top: "76.0%",
+                    color: "#FFFFFF",
+                    ariaLabel: "WORLD KYOTO Google Maps Location",
+                  },
+                ]}
                 onReveal={() => handleFoodClick("gunkan")}
               />
 
@@ -686,7 +822,7 @@ export default function Home() {
                     }}
                   >
                     <InstructionPill
-                      text="* PULL THE SOMEN"
+                      text="PULL THE SOMEN"
                       showArrow={true}
                       arrowDirection="up"
                     />
@@ -714,7 +850,7 @@ export default function Home() {
                     }}
                   >
                     <InstructionPill
-                      text="* SWIPE TO NEXT"
+                      text="SWIPE FOR NEXT"
                       showArrow={true}
                       arrowDirection="down"
                     />
@@ -879,12 +1015,12 @@ export default function Home() {
 
       {/* ── Soft Back Button on Section 2 (returns to Wagasa intro cover) ── */}
       <AnimatePresence>
-        {isOpen && !isNextPage && (
+        {isOpen && !isNextPage && !isSection2Scrolled && (
           <motion.button
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
+            transition={{ duration: 0.3 }}
             onClick={(e) => {
               e.stopPropagation();
               setIsOpen(false);
@@ -935,6 +1071,13 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+      {/* ── Scroll indicator on Section 2 (visible until scrolled) ── */}
+      <AnimatePresence>
+        {isOpen && !isNextPage && !isSection2Scrolled && !isSection2AtBottom && (
+          <ScrollChevron onClick={scrollSection2Down} />
+        )}
+      </AnimatePresence>
+
       {/* ── Bottom CTA on Section 2: "TAP ON THE AUTUMN LEAF" (Only visible when scrolled to bottom) ── */}
       <AnimatePresence>
         {isOpen && !isNextPage && isSection2AtBottom && (
@@ -957,11 +1100,18 @@ export default function Home() {
             }}
           >
             <InstructionPill
-              text="TAP ON THE AUTUMN LEAF"
+              text="TAP THE AUTUMN LEAF"
               showArrow={true}
               arrowDirection="down"
             />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Scroll indicator on Section 3 (visible until scrolled to bottom or somen active) ── */}
+      <AnimatePresence>
+        {isNextPage && !isSomenActivated && !showAccomms && !isSection3AtBottom && (
+          <ScrollChevron onClick={scrollSection3Down} />
         )}
       </AnimatePresence>
 
