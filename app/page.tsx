@@ -839,6 +839,7 @@ export default function Home() {
                       text="PULL THE SOMEN"
                       showArrow={true}
                       arrowDirection="up"
+                      size="lg"
                     />
                   </motion.div>
                 )}
@@ -867,6 +868,7 @@ export default function Home() {
                       text="SWIPE FOR NEXT"
                       showArrow={true}
                       arrowDirection="down"
+                      size="lg"
                     />
                   </motion.div>
                 )}
