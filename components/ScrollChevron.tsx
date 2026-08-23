@@ -36,8 +36,8 @@ export function ScrollChevron({ onClick, style }: ScrollChevronProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: "34px",
-        height: "34px",
+        width: "42px",
+        height: "42px",
         borderRadius: "50%",
         background: "rgba(30, 20, 15, 0.45)",
         border: "1px solid rgba(243, 213, 181, 0.4)",
@@ -52,8 +52,8 @@ export function ScrollChevron({ onClick, style }: ScrollChevronProps) {
       }}
     >
       <svg
-        width="14"
-        height="8"
+        width="18"
+        height="10"
         viewBox="0 0 14 8"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

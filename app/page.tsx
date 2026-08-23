@@ -118,15 +118,15 @@ function InteractiveFoodItem({
 
             {mapLinks &&
               mapLinks.map((link, idx) => (
-                <motion.a
+                <a
                   key={idx}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.ariaLabel}
-                  onClick={(e) => e.stopPropagation()}
-                  whileHover={{ scale: 1.25 }}
-                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
                   style={{
                     position: "absolute",
                     left: link.left,
@@ -135,28 +135,42 @@ function InteractiveFoodItem({
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    padding: "6px",
+                    padding: "10px",
+                    minWidth: "38px",
+                    minHeight: "38px",
                     cursor: "pointer",
                     zIndex: 35,
                     textDecoration: "none",
                     filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.6))",
+                    touchAction: "manipulation",
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke={link.color || "#FFFFFF"}
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <motion.div
+                    whileHover={{ scale: 1.25 }}
+                    whileTap={{ scale: 0.88 }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    <polyline points="15 3 21 3 21 9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </svg>
-                </motion.a>
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={link.color || "#FFFFFF"}
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </motion.div>
+                </a>
               ))}
           </motion.div>
         )}
