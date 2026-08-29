@@ -194,6 +194,7 @@ export default function Home() {
   const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
   const section3TouchStartY = useRef(0);
+  const bottomTouchStartY = useRef(0);
   const allowSwipeTransition = useRef(false);
   const somenWasActivatedOnTouchStart = useRef(false);
   const lastSomenDeactivateTime = useRef(0);
@@ -236,7 +237,7 @@ export default function Home() {
     const diffY = section3TouchStartY.current - touchEndY;
     const scrollTop = e.currentTarget.scrollTop;
 
-    // 1. Swipe down (diffY < -40) at the top of Section 3
+    // 1. Swipe down (diffY < -40) at the top of Section 3 to go back
     if (scrollTop <= 10 && diffY < -40) {
       if (somenWasActivatedOnTouchStart.current) {
         if (isSomenActivated) {
@@ -251,11 +252,6 @@ export default function Home() {
         }
       }
       return;
-    }
-
-    // 2. Swipe up (diffY > 50) when somen is fully pulled -> Go to Accommodation (Section 4)
-    if (isSomenFullyPulled && !showAccomms && allowSwipeTransition.current && diffY > 50) {
-      setShowAccomms(true);
     }
   };
 
@@ -680,8 +676,8 @@ export default function Home() {
                 mapLinks={[
                   {
                     url: "https://maps.app.goo.gl/25vec9h4CoArVZAM6?g_st=ipc",
-                    left: "47.5%",
-                    top: "74.8%",
+                    left: "66.0%",
+                    top: "71.5%",
                     color: "#FFFFFF",
                     ariaLabel: "SAAMI Google Maps Location",
                   },
@@ -854,7 +850,21 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0, x: "-50%" }}
                     exit={{ opacity: 0, scale: 0.85, x: "-50%" }}
                     transition={{ duration: 0.5 }}
-                    onClick={() => setShowAccomms(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAccomms(true);
+                    }}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      bottomTouchStartY.current = e.touches[0].clientY;
+                    }}
+                    onTouchMove={(e) => {
+                      e.stopPropagation();
+                      const diffY = bottomTouchStartY.current - e.touches[0].clientY;
+                      if (diffY > 30 || diffY < -30) {
+                        setShowAccomms(true);
+                      }
+                    }}
                     style={{
                       position: "absolute",
                       left: "50%",
@@ -862,6 +872,8 @@ export default function Home() {
                       zIndex: 100001,
                       textAlign: "center",
                       cursor: "pointer",
+                      padding: "16px 24px",
+                      touchAction: "none",
                     }}
                   >
                     <InstructionPill
@@ -910,6 +922,12 @@ export default function Home() {
                     drag="y"
                     dragConstraints={{ top: -530, bottom: 0 }}
                     dragElastic={0.15}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                    }}
+                    onTouchMove={(e) => {
+                      e.stopPropagation();
+                    }}
                     onDragStart={() => {
                       setIsSomenPulled(true);
                     }}
