@@ -676,8 +676,8 @@ export default function Home() {
                 mapLinks={[
                   {
                     url: "https://maps.app.goo.gl/25vec9h4CoArVZAM6?g_st=ipc",
-                    left: "66.0%",
-                    top: "71.5%",
+                    left: "64.5%",
+                    top: "73.8%",
                     color: "#FFFFFF",
                     ariaLabel: "SAAMI Google Maps Location",
                   },
