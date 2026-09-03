@@ -10,10 +10,17 @@ import { Scene4Overlay } from "./wagasa/Scene4Overlay";
 
 export function WagasaSection({ onOpen }: WagasaSectionProps) {
   const [scene, setScene] = useState<SceneState>("scene1");
-  const startSequence = useCallback(() => {
+  const startSequence = useCallback((isUserGesture = false) => {
     setScene((prev) => {
       if (prev !== "scene1") return prev;
-      navigator.vibrate?.(30);
+
+      if (isUserGesture && typeof navigator !== "undefined" && navigator.userActivation?.hasBeenActive) {
+        try {
+          navigator.vibrate?.(30);
+        } catch {
+          // Ignore vibration intervention
+        }
+      }
 
       // Step 2 (Image 2): Payung mekar ke bingkai pinggir layar, bertahan ~3.5 detik
       // Step 3: Semua payung menghilang (opacity: 0), figur bertahan selama 1 detik
@@ -32,14 +39,14 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      startSequence();
+      startSequence(false);
     }, 3000);
 
     return () => clearTimeout(timer);
   }, [startSequence]);
 
   const handleClick = () => {
-    startSequence();
+    startSequence(true);
   };
 
   const isExiting = scene !== "scene1";
