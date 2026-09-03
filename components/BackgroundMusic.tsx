@@ -8,70 +8,76 @@ const AUDIO_SRC = "/backsound/backsound.mp3";
 export function BackgroundMusic() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
 
-  // Fungsi untuk unmute dengan efek fade-in lembut
+  // Fungsi untuk unmute & play dengan efek fade-in lembut
   const unmuteWithFadeIn = useCallback(() => {
-    // 1. Unmute & play pada elemen audio utama
     const audio = audioRef.current;
-    if (audio) {
-      audio.muted = false;
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsMuted(false);
-            setIsPlaying(true);
+    if (!audio) return;
 
-            // Efek fade-in volume dari 0.05 menuju 0.65 secara bertahap
-            const targetVolume = 0.65;
-            let currentVol = 0.05;
-            audio.volume = currentVol;
-
-            const fadeInterval = setInterval(() => {
-              if (!audio) {
-                clearInterval(fadeInterval);
-                return;
-              }
-              currentVol = Math.min(targetVolume, currentVol + 0.05);
-              audio.volume = currentVol;
-              if (currentVol >= targetVolume) {
-                clearInterval(fadeInterval);
-              }
-            }, 60);
-          })
-          .catch(() => {
-            audio.muted = true;
-          });
-      }
+    // Jika audio sudah unmuted dan sedang berputar, jangan restart atau buat interval ganda
+    if (!audio.muted && !audio.paused && audio.volume >= 0.5) {
+      setIsPlaying(true);
+      setIsMuted(false);
+      return;
     }
 
-    // 2. Kirim sinyal unmute & play ke iframe delegation
-    try {
-      iframeRef.current?.contentWindow?.postMessage(
-        { target: "audio-frame", action: "UNMUTE" },
-        "*"
-      );
-    } catch {}
+    // Bersihkan interval fade sebelumnya jika ada yang sedang berjalan
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+
+    audio.muted = false;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsMuted(false);
+          setIsPlaying(true);
+
+          // Efek fade-in volume dari 0.05 menuju 0.65 secara bertahap
+          const targetVolume = 0.65;
+          let currentVol = Math.max(audio.volume, 0.05);
+          audio.volume = currentVol;
+
+          fadeIntervalRef.current = setInterval(() => {
+            if (!audio) {
+              if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+              return;
+            }
+            currentVol = Math.min(targetVolume, currentVol + 0.05);
+            audio.volume = currentVol;
+            if (currentVol >= targetVolume) {
+              if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+              fadeIntervalRef.current = null;
+            }
+          }, 60);
+        })
+        .catch(() => {
+          // Jika browser menolak pemutaran karena menunggu user gesture
+          audio.muted = true;
+        });
+    }
   }, []);
 
   const togglePlay = (e?: React.MouseEvent | React.SyntheticEvent) => {
     e?.stopPropagation?.();
     const audio = audioRef.current;
+    if (!audio) return;
 
-    // Jika sedang muted atau pause -> langsung aktifkan & unmute
-    if (isMuted || !isPlaying) {
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+
+    // Jika sedang muted atau pause -> aktifkan & unmute
+    if (isMuted || !isPlaying || audio.paused) {
       unmuteWithFadeIn();
     } else {
-      if (audio) audio.pause();
-      try {
-        iframeRef.current?.contentWindow?.postMessage(
-          { target: "audio-frame", action: "PAUSE" },
-          "*"
-        );
-      } catch {}
+      audio.pause();
       setIsPlaying(false);
     }
   };
@@ -86,7 +92,7 @@ export function BackgroundMusic() {
       (window as any).__triggerPlayMusic = unmuteWithFadeIn;
     }
 
-    // 2. Muted Autoplay pada elemen audio utama
+    // 2. Muted Autoplay pada elemen audio utama (agar buffer siap)
     audio.defaultMuted = true;
     audio.muted = true;
     audio.volume = 0;
@@ -97,23 +103,12 @@ export function BackgroundMusic() {
           setIsPlaying(true);
           setIsMuted(true);
         })
-        .catch(() => {});
+        .catch(() => {
+          setIsPlaying(false);
+        });
     }
 
-    // 3. Listener komunikasi postMessage dari audio iframe
-    const handleFrameMessage = (event: MessageEvent) => {
-      if (event.data?.source === "audio-frame") {
-        if (event.data.status === "PLAYING") {
-          setIsPlaying(true);
-          setIsMuted(false);
-        } else if (event.data.status === "PAUSED") {
-          setIsPlaying(false);
-        }
-      }
-    };
-    window.addEventListener("message", handleFrameMessage);
-
-    // 4. Sentuhan / gesture pertama di mana saja pada layar langsung melakukan unmute
+    // 3. Sentuhan / gesture pertama di mana saja pada layar langsung melakukan unmute
     let hasUnmuted = false;
 
     const interactionEvents = [
@@ -139,7 +134,6 @@ export function BackgroundMusic() {
     const handleInteraction = () => {
       if (hasUnmuted) return;
       hasUnmuted = true;
-
       unmuteWithFadeIn();
       removeListeners();
     };
@@ -154,7 +148,10 @@ export function BackgroundMusic() {
         delete (window as any).__unmuteMusic;
         delete (window as any).__triggerPlayMusic;
       }
-      window.removeEventListener("message", handleFrameMessage);
+      if (fadeIntervalRef.current) {
+        clearInterval(fadeIntervalRef.current);
+        fadeIntervalRef.current = null;
+      }
       removeListeners();
     };
   }, [unmuteWithFadeIn]);
@@ -163,26 +160,7 @@ export function BackgroundMusic() {
 
   return (
     <>
-      {/* ── Iframe Autoplay Delegation (Permissions Policy: allow="autoplay") ── */}
-      <iframe
-        ref={iframeRef}
-        src="/audio-frame.html"
-        allow="autoplay; fullscreen"
-        title="Background Audio Player"
-        tabIndex={-1}
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          width: "1px",
-          height: "1px",
-          opacity: 0,
-          pointerEvents: "none",
-          border: "none",
-          clip: "rect(0, 0, 0, 0)",
-        }}
-      />
-
-      {/* ── HTML5 Audio Element Fallback (Muted Autoplay) ── */}
+      {/* ── Single HTML5 Audio Element ── */}
       <audio
         ref={audioRef}
         src={AUDIO_SRC}
