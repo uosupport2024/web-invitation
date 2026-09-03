@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Background Music Player</title>
+</head>
+<body style="margin:0;padding:0;overflow:hidden;background:transparent;">
+  <audio id="frame-audio" src="/backsound/backsound.mp3" autoplay loop playsinline></audio>
+  <script>
+    const audio = document.getElementById('frame-audio');
+    audio.volume = 0.65;
+
+    function notifyParent(status) {
+      try {
+        window.parent.postMessage({ source: 'audio-frame', status: status }, '*');
+      } catch (e) {}
+    }
+
+    audio.addEventListener('play', () => notifyParent('PLAYING'));
+    audio.addEventListener('pause', () => notifyParent('PAUSED'));
+
+    // Coba autoplay langsung di dalam frame dengan izin allow="autoplay"
+    const promise = audio.play();
+    if (promise !== undefined) {
+      promise.then(() => notifyParent('PLAYING')).catch((e) => notifyParent('BLOCKED'));
+    }
+
+    // Tangkap perintah kontrol dari halaman utama
+    window.addEventListener('message', (event) => {
+      if (!event.data || event.data.target !== 'audio-frame') return;
+
+      if (event.data.action === 'PLAY' || event.data.action === 'UNMUTE') {
+        audio.muted = false;
+        audio.volume = 0.65;
+        audio.play().then(() => notifyParent('PLAYING')).catch(() => {});
+      } else if (event.data.action === 'PAUSE') {
+        audio.pause();
+        notifyParent('PAUSED');
+      } else if (event.data.action === 'TOGGLE') {
+        if (audio.paused) {
+          audio.muted = false;
+          audio.volume = 0.65;
+          audio.play().then(() => notifyParent('PLAYING')).catch(() => {});
+        } else {
+          audio.pause();
+          notifyParent('PAUSED');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

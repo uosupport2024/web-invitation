@@ -65,7 +65,12 @@ export function Scene4Overlay({ scene, onOpen }: Scene4OverlayProps) {
             }}
           >
             <div
-              onClick={onOpen}
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  (window as any).__unmuteMusic?.();
+                }
+                onOpen?.();
+              }}
               style={{
                 position: "relative",
                 width: "34%",

@@ -11,6 +11,13 @@ import { Scene4Overlay } from "./wagasa/Scene4Overlay";
 export function WagasaSection({ onOpen }: WagasaSectionProps) {
   const [scene, setScene] = useState<SceneState>("scene1");
   const startSequence = useCallback((isUserGesture = false) => {
+    // Bersamaan dengan payung membuka, jalankan unmute musik di luar render cycle
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        (window as any).__unmuteMusic?.();
+      }, 0);
+    }
+
     setScene((prev) => {
       if (prev !== "scene1") return prev;
 
@@ -46,6 +53,9 @@ export function WagasaSection({ onOpen }: WagasaSectionProps) {
   }, [startSequence]);
 
   const handleClick = () => {
+    if (typeof window !== "undefined") {
+      (window as any).__unmuteMusic?.();
+    }
     startSequence(true);
   };
 
