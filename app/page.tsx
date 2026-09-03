@@ -8,6 +8,7 @@ import { FallingLeaves } from "@/components/FallingLeaves";
 import { AccommodationSection } from "@/components/sections/AccommodationSection";
 import { InstructionPill } from "@/components/InstructionPill";
 import { ScrollChevron } from "@/components/ScrollChevron";
+import { BackgroundMusic } from "@/components/BackgroundMusic";
 
 interface MapLink {
   url: string;
@@ -203,8 +204,10 @@ export default function Home() {
     if (section3Ref.current) {
       section3Ref.current.scrollTop = 0;
     }
-    setIsSection3AtBottom(false);
-    setIsSection3Scrolled(false);
+    queueMicrotask(() => {
+      setIsSection3AtBottom(false);
+      setIsSection3Scrolled(false);
+    });
   }, [isSomenActivated, isNextPage, showAccomms]);
 
   const handleFoodClick = (key: string) => {
@@ -374,6 +377,9 @@ export default function Home() {
         position: "relative",
       }}
     >
+      {/* ── Background Music Player ── */}
+      <BackgroundMusic />
+
       {/* ── Section 1: Wagasa Intro — slides UP when opened ── */}
       <motion.div
         animate={{ y: isOpen ? "-100%" : "0%" }}
