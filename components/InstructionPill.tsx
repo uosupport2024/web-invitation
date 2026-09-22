@@ -6,7 +6,7 @@ interface InstructionPillProps {
   text: string;
   showArrow?: boolean;
   arrowDirection?: "up" | "down";
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   onClick?: (e: React.MouseEvent) => void;
   style?: React.CSSProperties;
 }
@@ -20,6 +20,7 @@ export function InstructionPill({
   style,
 }: InstructionPillProps) {
   const formattedText = text.trim();
+  const isXs = size === "xs";
   const isLarge = size === "lg";
 
   return (
@@ -40,16 +41,20 @@ export function InstructionPill({
           margin: 0,
           color: "#F3D5B5",
           fontFamily: "var(--font-sans), system-ui, sans-serif",
-          fontSize: isLarge ? "0.95rem" : "0.78rem",
-          letterSpacing: isLarge ? "0.10em" : "0.14em",
+          fontSize: isXs ? "0.62rem" : isLarge ? "0.95rem" : "0.78rem",
+          letterSpacing: isXs ? "0.10em" : isLarge ? "0.10em" : "0.14em",
           textTransform: "uppercase",
-          fontWeight: 600,
+          fontWeight: isXs ? 500 : 600,
           textShadow: "0 2px 8px rgba(0,0,0,0.85)",
           background: "rgba(97, 41, 26, 0.94)",
-          padding: isLarge ? "9px 20px" : "7px 16px",
+          padding: isXs ? "3px 10px" : isLarge ? "9px 20px" : "7px 16px",
           borderRadius: "9999px",
-          border: "1px dashed rgba(243, 213, 181, 0.8)",
-          boxShadow: "0 3px 12px rgba(0,0,0,0.5)",
+          border: isXs
+            ? "1px dashed rgba(243, 213, 181, 0.7)"
+            : "1px dashed rgba(243, 213, 181, 0.8)",
+          boxShadow: isXs
+            ? "0 2px 6px rgba(0,0,0,0.4)"
+            : "0 3px 12px rgba(0,0,0,0.5)",
           backdropFilter: "blur(6px)",
           WebkitBackdropFilter: "blur(6px)",
           whiteSpace: "nowrap",

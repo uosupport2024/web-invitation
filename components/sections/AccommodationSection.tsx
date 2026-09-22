@@ -344,7 +344,7 @@ export function AccommodationSection({ isActive, onClose, onNext }: Accommodatio
         }}
         style={{
           position: "absolute",
-          bottom: "26px",
+          bottom: "16px",
           left: "50%",
           zIndex: 60,
           cursor: "pointer",
@@ -356,11 +356,7 @@ export function AccommodationSection({ isActive, onClose, onNext }: Accommodatio
       >
         <InstructionPill
           text="TAP FOR NEXT"
-          size="sm"
-          style={{
-            transform: "scale(0.92)",
-            transformOrigin: "center bottom",
-          }}
+          size="xs"
         />
       </motion.div>
     </motion.div>
