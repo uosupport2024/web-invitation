@@ -3,13 +3,15 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
+import { InstructionPill } from "@/components/InstructionPill";
 
 interface AccommodationSectionProps {
   isActive: boolean;
   onClose: () => void;
+  onNext?: () => void;
 }
 
-export function AccommodationSection({ isActive, onClose }: AccommodationSectionProps) {
+export function AccommodationSection({ isActive, onClose, onNext }: AccommodationSectionProps) {
   const touchStartY = useRef(0);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -320,6 +322,45 @@ export function AccommodationSection({ isActive, onClose }: AccommodationSection
           fill
           className="object-contain"
           sizes="108vw"
+        />
+      </motion.div>
+
+      {/* ── CTA: "TAP FOR NEXT" ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 15, x: "-50%" }}
+        animate={{
+          opacity: isActive ? 1 : 0,
+          y: isActive ? 0 : 15,
+          x: "-50%",
+        }}
+        transition={{
+          duration: 0.6,
+          delay: 2.2,
+          ease: "easeOut",
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onNext?.();
+        }}
+        style={{
+          position: "absolute",
+          bottom: "26px",
+          left: "50%",
+          zIndex: 60,
+          cursor: "pointer",
+          touchAction: "manipulation",
+          WebkitTapHighlightColor: "transparent",
+        }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <InstructionPill
+          text="TAP FOR NEXT"
+          size="sm"
+          style={{
+            transform: "scale(0.92)",
+            transformOrigin: "center bottom",
+          }}
         />
       </motion.div>
     </motion.div>

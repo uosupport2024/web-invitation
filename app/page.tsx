@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { WagasaSection } from "@/components/sections/WagasaSection";
 import { FallingLeaves } from "@/components/FallingLeaves";
 import { AccommodationSection } from "@/components/sections/AccommodationSection";
+import { WagasaClosingSection } from "@/components/sections/WagasaClosingSection";
 import { InstructionPill } from "@/components/InstructionPill";
 import { ScrollChevron } from "@/components/ScrollChevron";
 import { BackgroundMusic } from "@/components/BackgroundMusic";
@@ -188,6 +189,7 @@ export default function Home() {
   const [isSomenPulled, setIsSomenPulled] = useState(false);
   const [isSomenFullyPulled, setIsSomenFullyPulled] = useState(false);
   const [showAccomms, setShowAccomms] = useState(false);
+  const [showWagasaClosing, setShowWagasaClosing] = useState(false);
   const [isSection2AtBottom, setIsSection2AtBottom] = useState(false);
   const [isSection2Scrolled, setIsSection2Scrolled] = useState(false);
   const [isSection3AtBottom, setIsSection3AtBottom] = useState(false);
@@ -1159,6 +1161,13 @@ export default function Home() {
       <AccommodationSection
         isActive={showAccomms}
         onClose={() => setShowAccomms(false)}
+        onNext={() => setShowWagasaClosing(true)}
+      />
+
+      {/* ── Section 5: Wagasa Closing (Reverse Umbrella Closing) ── */}
+      <WagasaClosingSection
+        isActive={showWagasaClosing}
+        onBack={() => setShowWagasaClosing(false)}
       />
     </div>
   );
